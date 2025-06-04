@@ -60,7 +60,7 @@ export default function UpcomingEvents() {
               whileInView={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className=" rounded-lg shadow-sm border border-primary/20 overflow-hidden hover:shadow-md transition-shadow duration-300"
+              className=" rounded-lg shadow-sm shadow-amber-100 overflow-hidden hover:shadow-md transition-shadow duration-300"
             >
               <div className="p-6">
                 <div className="flex items-center justify-between mb-4">
@@ -101,7 +101,7 @@ export default function UpcomingEvents() {
                 </div>
                 <Link
                   href="/events"
-                  className="inline-flex items-center text-primary hover:text-primary-dark font-medium text-[#FFC94A]" 
+                  className="inline-flex items-center text-[#FFC94A] hover:text-yellow-400 font-medium transition-transform duration-300 hover:translate-x-1"
                 >
                   Learn More
                   <svg
@@ -132,7 +132,7 @@ export default function UpcomingEvents() {
         >
           <Link
             href="/events"
-            className="inline-flex items-center px-6 py-3 border-2 border-primary text-primary rounded-md font-semibold hover:bg-primary hover:text-white transition-colors duration-200"
+            className="inline-flex items-center px-6 py-3 shadow-sm shadow-amber-100 text-primary rounded-md font-semibold hover:bg-primary hover:text-white transition-colors duration-200 hover:shadow-md"
           >
             View All Events
             <svg

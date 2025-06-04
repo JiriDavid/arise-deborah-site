@@ -1,11 +1,11 @@
 "use client";
 
-import { SignIn } from "@clerk/nextjs";
+import { SignUp } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
 
-export default function LoginPage() {
+export default function SignUpPage() {
   const { isLoaded, userId } = useAuth();
   const router = useRouter();
 
@@ -27,17 +27,19 @@ export default function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-gray-900">Admin Login</h2>
+          <h2 className="text-3xl font-extrabold text-gray-900">
+            Create Admin Account
+          </h2>
         </div>
-        <SignIn
+        <SignUp
           appearance={{
             elements: {
               formButtonPrimary: "bg-primary hover:bg-primary-dark",
               footerActionLink: "text-primary hover:text-primary-dark",
             },
           }}
-          afterSignInUrl="/admin/sermons"
-          signUpUrl="/admin/sign-up"
+          afterSignUpUrl="/admin/sermons"
+          signInUrl="/admin/login"
         />
       </div>
     </div>

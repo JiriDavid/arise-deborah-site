@@ -7,12 +7,22 @@ import Footer from "./components/Footer";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-  title: "Arise Deborah Church",
-  description:
-    "Welcome to Arise Deborah Church - A place of worship, fellowship, and spiritual growth.",
+  title: "Arise Deborah",
+  description: "A place of worship and spiritual growth",
 };
 
 export default function RootLayout({ children }) {
+  // Check if the current path is an admin route
+  const isAdminRoute =
+    typeof window !== "undefined" &&
+    window.location.pathname.startsWith("/admin");
+
+  // If it's an admin route, render only the children without the main layout
+  if (isAdminRoute) {
+    return <ClerkProvider>{children}</ClerkProvider>;
+  }
+
+  // For non-admin routes, render the full layout
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
@@ -24,7 +34,7 @@ export default function RootLayout({ children }) {
             {/* Background pattern */}
             <div className="absolute inset-0 bg-[url('/images/grid.svg')] bg-center [mask-image:linear-gradient(180deg,white,rgba(255,255,255,0))]" />
             <div className="relative">
-              <Navigation />
+               <Navigation /> 
               <main>{children}</main>
               <Footer />
             </div>

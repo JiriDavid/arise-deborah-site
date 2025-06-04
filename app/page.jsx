@@ -5,6 +5,30 @@ import Image from "next/image";
 import Link from "next/link";
 import UpcomingEvents from "./components/UpcomingEvents";
 
+const items = [
+  {
+    title: "Sunday Service",
+    description: "Join us every Sunday at 10:00 AM for worship and the Word.",
+    link: "/events",
+    icon: "⛪",
+    bgImage: "/giving-1.png",
+  },
+  {
+    title: "Latest Sermons",
+    description: "Watch or listen to our latest messages online.",
+    link: "/sermons",
+    icon: "🎤",
+    bgImage: "/giving-2.jpg",
+  },
+  {
+    title: "Get Involved",
+    description: "Discover ways to serve and connect with our community.",
+    link: "/ministries",
+    icon: "🤝",
+    bgImage: "/giving-1.png",
+  },
+];
+
 export default function HomePage() {
   return (
     <div className="min-h-screen ">
@@ -37,13 +61,13 @@ export default function HomePage() {
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Link
                   href="/about"
-                  className="rounded-md bg-primary px-6 py-3 text-lg font-semibold text-tertiary shadow-sm hover:bg-primary-light focus-visible:outline  focus-visible:outline-offset-2 focus-visible:outline-primary border-2 border-primary"
+                  className="rounded-md bg-primary px-6 py-3 text-lg font-semibold text-tertiary shadow-sm shadow-[#FFC94A] hover:bg-primary-light focus-visible:outline  focus-visible:outline-offset-2 focus-visible:outline-primary hover:shadow-md"
                 >
                   Learn More
                 </Link>
                 <Link
                   href="/contact"
-                  className="rounded-md text-white bg-[#FFC94A] px-6 py-3 text-lg font-semibold text-tertiary border-primary shadow-sm hover:bg-primary focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="rounded-md text-white bg-[#E6B53D] px-6 py-3 text-lg font-semibold text-tertiary border-primary shadow-sm hover:bg-primary focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   Contact Us
                 </Link>
@@ -55,58 +79,42 @@ export default function HomePage() {
 
       {/* Featured Sections */}
       <div className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-            {[
-              {
-                title: "Sunday Service",
-                description:
-                  "Join us every Sunday at 10:00 AM for worship and the Word.",
-                link: "/events",
-                icon: "⛪",
-              },
-              {
-                title: "Latest Sermons",
-                description: "Watch or listen to our latest messages online.",
-                link: "/sermons",
-                icon: "🎤",
-              },
-              {
-                title: "Get Involved",
-                description:
-                  "Discover ways to serve and connect with our community.",
-                link: "/ministries",
-                icon: "🤝",
-              },
-            ].map((item) => (
-              <motion.div
-                key={item.title}
-                className="text-center border-2 p-8 rounded-lg shadow-sm"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-              >
+      <div className="max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+          {items.map((item) => (
+            <motion.div
+              key={item.title}
+              className="text-center shadow-[#FFC94A] p-8 rounded-lg shadow-sm bg-cover bg-center text-white relative overflow-hidden"
+              style={{ backgroundImage: `url(${item.bgImage})` }}
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.2 }}
+            >
+              {/* Overlay for better text contrast */}
+              <div className="absolute inset-0 bg-black/60 rounded-lg z-0" />
+              <div className="relative z-10">
                 <div className="text-4xl mb-4">{item.icon}</div>
-                <h3 className="text-xl font-semibold text-tertiary mb-2">
+                <h3 className="text-xl font-semibold text-white mb-2">
                   {item.title}
                 </h3>
-                <p className="text-accent mb-4">{item.description}</p>
+                <p className="mb-4 text-white">{item.description}</p>
                 <Link
                   href={item.link}
-                  className="text-primary hover:text-primary-dark font-medium text-[#FFC94A]"
+                  className="text-[#FFC94A] hover:text-yellow-400 font-medium transition-transform duration-300 hover:translate-x-1"
                 >
                   Learn More →
                 </Link>
-              </motion.div>
-            ))}
-          </div>
+              </div>
+            </motion.div>
+          ))}
         </div>
       </div>
+    </div>
 
       {/* Upcoming Events Section */}
       <UpcomingEvents />
 
       {/* Call to Action */}
-      <div className="py-24 px-6 bg-secondary/10">
+      <div className="py-24 px-6 bg-secondary/10 shadow-sm mb-6 shadow-[#FFC94A] mx-6 rounded-lg">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl font-bold tracking-tight text-tertiary sm:text-4xl mb-6">
             Join Us This Sunday
@@ -117,7 +125,7 @@ export default function HomePage() {
           </p>
           <Link
             href="/contact"
-            className="rounded-md bg-primary px-6 py-3 text-lg font-semibold text-tertiary shadow-sm hover:bg-primary-light focus-visible:outline  focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="rounded-md bg-primary px-6 py-3 text-lg font-semibold text-tertiary shadow-sm hover:bg-primary-light focus-visible:outline  focus-visible:outline-offset-2 focus-visible:outline-primary hover:shadow-md shadow-[#FFC94A]"
           >
             Plan Your Visit
           </Link>
