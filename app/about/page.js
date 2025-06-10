@@ -62,7 +62,7 @@ export default function AboutPage() {
 
         {/* Mission & Vision */}
         <div className="bg-secondary-light grid grid-cols-2 gap-4 items-center justify-between mx-4 ">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 border-2 p-4 rounded-lg col-span-2 md:col-span-1">
+        <div className="mx-auto max-w-7xl px-6 lg:px-8 shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg col-span-2 md:col-span-1">
           <div className="mx-auto max-w-2xl lg:text-center">
             <h2 className="text-base font-semibold leading-7 text-primary">
               Our Mission
@@ -79,7 +79,7 @@ export default function AboutPage() {
         </div>
 
         {/* Core Beliefs */}
-        <div className="mx-auto max-w-7xl px-6   col-span-2 md:col-span-1 border-2 p-4 rounded-lg">
+        <div className="mx-auto max-w-7xl px-6   col-span-2 md:col-span-1 shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg">
           <div className="mx-auto max-w-2xl lg:text-center">
             <h2 className="text-base font-semibold leading-7 text-primary">
               Core Beliefs
@@ -117,7 +117,7 @@ export default function AboutPage() {
               ].map((belief) => (
                 <motion.div
                   key={belief.title}
-                  className="flex flex-col border-2 p-4 rounded-lg"
+                  className="flex flex-col shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg"
                   whileHover={{ scale: 1.05 }}
                   transition={{ duration: 0.2 }}
                 >

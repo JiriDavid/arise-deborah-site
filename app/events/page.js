@@ -1,60 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Navigation from "../components/Navigation";
 import { motion } from "framer-motion";
 import { format } from "date-fns";
 import Image from "next/image";
 import { FiUsers, FiCalendar, FiMapPin, FiArrowRight } from "react-icons/fi";
-
-const events = [
-  {
-    id: 1,
-    title: "Sunday Service",
-    date: "2024-03-31",
-    image: "/praise-1.jpg",
-    time: "10:00 AM",
-    location: "Main Sanctuary",
-    description: "Join us for worship and the Word.",
-    category: "Regular Service",
-    registrationRequired: false,
-  },
-  {
-    id: 2,
-    title: "Youth Group Meeting",
-    date: "2024-04-02",
-    image: "/praise-3.jpeg",
-    time: "6:00 PM",
-    location: "Youth Center",
-    description: "Weekly youth fellowship and Bible study.",
-    category: "Youth Ministry",
-    registrationRequired: false,
-  },
-  {
-    id: 3,
-    title: "Women's Ministry Retreat",
-    date: "2024-04-05",
-    image: "/praise-3.jpeg",
-    time: "9:00 AM",
-    location: "Conference Center",
-    description: "A day of fellowship, worship, and spiritual growth.",
-    category: "Women's Ministry",
-    registrationRequired: true,
-  },
-  {
-    id: 4,
-    title: "Community Outreach",
-    date: "2024-04-07",
-    image: "/praise.jpg",
-    time: "2:00 PM",
-    location: "Local Community Center",
-    description: "Serving our community through various activities.",
-    category: "Outreach",
-    registrationRequired: true,
-  },
-];
+import "next-cloudinary/dist/cld-video-player.css";
 
 export default function EventsPage() {
+  const [events, setEvents] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [selectedEvent, setSelectedEvent] = useState(null);
   const [showRegistration, setShowRegistration] = useState(false);
   const [formData, setFormData] = useState({
@@ -64,11 +20,29 @@ export default function EventsPage() {
     numberOfGuests: 1,
   });
 
+  // Fetch events from the API
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch("/api/events");
+        const data = await res.json();
+        setEvents(data);
+      } catch (err) {
+        console.error("Failed to fetch events:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
   const handleRegistration = (e) => {
     e.preventDefault();
     console.log("Registration submitted:", formData);
     setShowRegistration(false);
   };
+
 
   return (
     <>
@@ -98,7 +72,7 @@ export default function EventsPage() {
                 transition={{ duration: 0.8, delay: 0.2 }}
               >
                 <Image
-                  src="/praise-1.jpg"
+                  src="/fallback.png"
                   alt="Worship gathering"
                   fill
                   className="object-cover"
@@ -113,9 +87,9 @@ export default function EventsPage() {
         {/* Events Grid */}
         <div className="mx-auto max-w-7xl px-6 lg:px-8 pb-20">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8">
-            {events.map((event) => (
+            {events.map((event,index) => (
               <motion.article
-                key={event.id}
+                key={event.id || index}
                 className="group relative bg-secondary-light rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-shadow"
                 whileHover={{ y: -5 }}
                 transition={{ duration: 0.3 }}
@@ -124,6 +98,7 @@ export default function EventsPage() {
                   <Image
                     src={event.image}
                     alt={event.title}
+                    onError={(e) => (e.currentTarget.src = "/fallback.jpg")}
                     fill
                     className="object-cover"
                   />
