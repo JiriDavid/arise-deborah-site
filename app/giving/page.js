@@ -2,8 +2,11 @@
 
 import { motion } from "framer-motion";
 import Navigation from "../components/Navigation";
+import { useRouter } from "next/navigation";
 
 export default function GivingPage() {
+  const router = useRouter();
+
   return (
     <div className="min-h-screen">
       {/* <Navigation /> */}
@@ -60,7 +63,7 @@ export default function GivingPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.5, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                className="p-8 rounded-lg shadow-sm border border-primary/20  hover:shadow-md transition-shadow duration-300"
+                className="p-8 rounded-lg shadow-sm shadow-[#FFC94A]  hover:shadow-md transition-shadow duration-300"
               >
                 <img
                   src={option.image}
@@ -71,7 +74,10 @@ export default function GivingPage() {
                   {option.title}
                 </h3>
                 <p className="text-accent mb-4">{option.description}</p>
-                <button className="w-full bg-primary text-tertiary px-6 py-3 rounded-md font-semibold hover:bg-primary-light transition-colors duration-200">
+                <button
+                  onClick={() => router.push("/give")}
+                  className="w-full bg-primary text-tertiary px-6 py-3 rounded-md font-semibold hover:bg-primary-light transition-colors duration-200 cursor-pointer shadow-sm shadow-[#FFC94A]"
+                >
                   Give Now
                 </button>
               </motion.div>
@@ -85,7 +91,7 @@ export default function GivingPage() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="p-8 rounded-lg shadow-sm border border-primary/20 "
+              className="p-8 rounded-lg shadow-sm shadow-[#FFC94A] "
             >
               <h2 className="text-2xl font-semibold text-tertiary mb-6">
                 Bank Transfer
@@ -94,17 +100,25 @@ export default function GivingPage() {
                 <div>
                   <div className="flex items-center mb-2">
                     <span className="text-2xl mr-2">🏦</span>
-                    <h3 className="text-lg font-medium text-accent">Bank Details</h3>
+                    <h3 className="text-lg font-medium text-accent">
+                      Bank Details
+                    </h3>
                   </div>
                   <p className="text-accent">Bank Name: Your Bank Name</p>
-                  <p className="text-accent">Account Name: Arise Deborah Church</p>
-                  <p className="text-accent">Account Number: XXXX-XXXX-XXXX-XXXX</p>
+                  <p className="text-accent">
+                    Account Name: Arise Deborah Church
+                  </p>
+                  <p className="text-accent">
+                    Account Number: XXXX-XXXX-XXXX-XXXX
+                  </p>
                   <p className="text-accent">Routing Number: XXXX-XXXX-XX</p>
                 </div>
                 <div>
                   <div className="flex items-center mb-2">
                     <span className="text-2xl mr-2">📝</span>
-                    <h3 className="text-lg font-medium text-accent">Instructions</h3>
+                    <h3 className="text-lg font-medium text-accent">
+                      Instructions
+                    </h3>
                   </div>
                   <p className="text-accent">
                     1. Log in to your bank's online banking
@@ -124,7 +138,7 @@ export default function GivingPage() {
               whileInView={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5 }}
               viewport={{ once: true }}
-              className="p-8 rounded-lg shadow-sm border border-primary/20 "
+              className="p-8 rounded-lg shadow-sm shadow-[#FFC94A] "
             >
               <h2 className="text-2xl font-semibold text-tertiary mb-6">
                 In-Person Giving
@@ -133,7 +147,9 @@ export default function GivingPage() {
                 <div>
                   <div className="flex items-center mb-2">
                     <span className="text-2xl mr-2">⏰</span>
-                    <h3 className="text-lg font-medium text-accent">Service Times</h3>
+                    <h3 className="text-lg font-medium text-accent">
+                      Service Times
+                    </h3>
                   </div>
                   <p className="text-accent">Sunday: 10:00 AM</p>
                   <p className="text-accent">Wednesday: 7:00 PM</p>
@@ -141,7 +157,9 @@ export default function GivingPage() {
                 <div>
                   <div className="flex items-center mb-2">
                     <span className="text-2xl mr-2">📍</span>
-                    <h3 className="text-lg font-medium text-accent">Location</h3>
+                    <h3 className="text-lg font-medium text-accent">
+                      Location
+                    </h3>
                   </div>
                   <p className="text-accent">123 Church Street</p>
                   <p className="text-accent">City, State 12345</p>

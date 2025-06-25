@@ -3,37 +3,55 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { format } from "date-fns";
+import { useState, useEffect } from "react";
+import "next-cloudinary/dist/cld-video-player.css";
 
-const events = [
-  {
-    id: 1,
-    title: "Sunday Service",
-    date: new Date(2024, 2, 24, 10, 0),
-    description: "Join us for worship and the Word every Sunday morning.",
-    location: "Main Sanctuary",
-    type: "service",
-  },
-  {
-    id: 2,
-    title: "Youth Night",
-    date: new Date(2024, 2, 27, 19, 0),
-    description:
-      "A special evening for our youth with worship, games, and fellowship.",
-    location: "Youth Center",
-    type: "youth",
-  },
-  {
-    id: 3,
-    title: "Bible Study",
-    date: new Date(2024, 2, 28, 19, 0),
-    description:
-      "Weekly Bible study focusing on spiritual growth and understanding.",
-    location: "Fellowship Hall",
-    type: "study",
-  },
-];
+//   {
+//     id: 1,
+//     title: "Sunday Service",
+//     date: new Date(2024, 2, 24, 10, 0),
+//     description: "Join us for worship and the Word every Sunday morning.",
+//     location: "Main Sanctuary",
+//     type: "service",
+//   },
+//   {
+//     id: 2,
+//     title: "Youth Night",
+//     date: new Date(2024, 2, 27, 19, 0),
+//     description:
+//       "A special evening for our youth with worship, games, and fellowship.",
+//     location: "Youth Center",
+//     type: "youth",
+//   },
+//   {
+//     id: 3,
+//     title: "Bible Study",
+//     date: new Date(2024, 2, 28, 19, 0),
+//     description:
+//       "Weekly Bible study focusing on spiritual growth and understanding.",
+//     location: "Fellowship Hall",
+//     type: "study",
+//   },
+// ];
+
 
 export default function UpcomingEvents() {
+  const [events, setEvents] = useState([]);
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch("/api/events");
+        const data = await res.json();
+        setEvents(data);
+      } catch (err) {
+        console.error("Failed to fetch events:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchEvents();
+  }, []);
   return (
     <section className="py-16 ">
       <div className="max-w-7xl mx-auto px-6">
@@ -53,7 +71,8 @@ export default function UpcomingEvents() {
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {events.map((event, index) => (
+        {events.slice(0, 3).map((event, index) => (
+
             <motion.div
               key={event.id}
               initial={{ opacity: 0, y: 20 }}

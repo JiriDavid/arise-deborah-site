@@ -7,25 +7,25 @@ import UpcomingEvents from "./components/UpcomingEvents";
 
 const items = [
   {
-    title: "Sunday Service",
-    description: "Join us every Sunday at 10:00 AM for worship and the Word.",
+    title: "UK 5AM Prayer Session",
+    description: "Join us everyday at 5:00 AM for prayers and the Word.",
     link: "/events",
     icon: "⛪",
-    bgImage: "/giving-1.png",
+    bgImage: "/prayer.jpg",
   },
   {
     title: "Latest Sermons",
     description: "Watch or listen to our latest messages online.",
     link: "/sermons",
     icon: "🎤",
-    bgImage: "/giving-2.jpg",
+    bgImage: "/sermon.jpg",
   },
   {
     title: "Get Involved",
     description: "Discover ways to serve and connect with our community.",
     link: "/ministries",
     icon: "🤝",
-    bgImage: "/giving-1.png",
+    bgImage: "/serve.jpg",
   },
 ];
 
@@ -43,7 +43,7 @@ export default function HomePage() {
           priority
           quality={90}
         />
-        <div className="absolute inset-0 text-[#E6B53D] bg-black/50">
+        <div className="absolute inset-0 text-[#E6B53D] bg-black/40">
           <div className="flex items-center justify-center h-full">
             <motion.div
               className="text-center px-6"
@@ -90,7 +90,7 @@ export default function HomePage() {
               transition={{ duration: 0.2 }}
             >
               {/* Overlay for better text contrast */}
-              <div className="absolute inset-0 bg-black/60 rounded-lg z-0" />
+              <div className="absolute inset-0 bg-black/40 rounded-lg z-0" />
               <div className="relative z-10">
                 <div className="text-4xl mb-4">{item.icon}</div>
                 <h3 className="text-xl font-semibold text-white mb-2">

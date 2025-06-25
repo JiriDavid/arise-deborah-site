@@ -4,6 +4,7 @@ import { SignIn } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useAuth } from "@clerk/nextjs";
+import "next-cloudinary/dist/cld-video-player.css";
 
 export default function LoginPage() {
   const { isLoaded, userId } = useAuth();

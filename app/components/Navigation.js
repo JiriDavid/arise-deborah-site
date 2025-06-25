@@ -13,8 +13,10 @@ const navigation = [
   { name: "Ministries", href: "/ministries" },
   { name: "Sermons", href: "/sermons" },
   { name: "Events", href: "/events" },
+  {name: "Testimonies", href: "/testimonies"},
   { name: "Giving", href: "/giving" },
   { name: "Contact", href: "/contact" },
+
 ];
 
 const Navigation = () => {
@@ -52,7 +54,7 @@ const Navigation = () => {
         </button>
 
         {/* Desktop Navigation */}
-        <div className="hidden lg:flex lg:gap-x-12">
+        <div className="hidden lg:flex lg:gap-x-8">
           {navigation.map((item) => (
             <Link
               key={item.href}

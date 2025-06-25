@@ -45,7 +45,7 @@ export default function ContactPage() {
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className=" p-8 rounded-lg shadow-sm border border-primary/20"
+              className=" p-8 rounded-lg shadow-sm shadow-[#FFC94A]"
             >
               <h2 className="text-2xl font-semibold text-tertiary mb-6">
                 Get in Touch
@@ -91,7 +91,7 @@ export default function ContactPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className=" p-8 rounded-lg shadow-sm border border-primary/20"
+              className=" p-8 rounded-lg shadow-sm shadow-[#FFC94A]"
             >
               <h2 className="text-2xl font-semibold text-tertiary mb-6">
                 Send us a Message
@@ -108,7 +108,7 @@ export default function ContactPage() {
                     type="text"
                     id="name"
                     name="name"
-                    className="w-full px-4 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full px-4 py-2 shadow-sm shadow-[#FFC94A] rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
                     placeholder="Your name"
                   />
                 </div>
@@ -123,7 +123,7 @@ export default function ContactPage() {
                     type="email"
                     id="email"
                     name="email"
-                    className="w-full px-4 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full px-4 py-2 shadow-sm shadow-[#FFC94A] rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
                     placeholder="your@email.com"
                   />
                 </div>
@@ -138,13 +138,13 @@ export default function ContactPage() {
                     id="message"
                     name="message"
                     rows="4"
-                    className="w-full px-4 py-2 border border-primary/20 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full px-4 py-2 shadow-sm shadow-[#FFC94A] rounded-md focus:outline-none focus:ring-2 focus:ring-primary/50"
                     placeholder="Your message"
                   ></textarea>
                 </div>
                 <button
                   type="submit"
-                  className="w-full bg-primary text-tertiary px-6 py-3 rounded-md font-semibold hover:bg-primary-light transition-colors duration-200"
+                  className="w-full shadow-sm shadow-[#FFC94A] bg-primary text-tertiary px-6 py-3 rounded-md font-semibold hover:shadow-md   transition-colors duration-200"
                 >
                   Send Message
                 </button>

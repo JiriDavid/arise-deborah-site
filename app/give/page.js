@@ -59,8 +59,7 @@ export default function GivePage() {
 
   return (
     <>
-      <Navigation />
-      <div className="min-h-screen  pt-24">
+      <div className="min-h-screen  pt-20">
         {/* Hero Section */}
         <div className="relative isolate">
           <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80">
@@ -107,10 +106,10 @@ export default function GivePage() {
                   <button
                     key={option.id}
                     onClick={() => setSelectedOption(option.id)}
-                    className={`w-full text-left p-6 rounded-lg border transition-colors ${
+                    className={`w-full text-left p-6 rounded-lg shadow-sm shadow-[#FFC94A] transition-colors ${
                       selectedOption === option.id
-                        ? "border-primary bg-primary/10"
-                        : "border-primary/20 hover:border-primary/40"
+                        ? " shadow-sm shadow-[#FFC94A]"
+                        : "shadow-sm shadow-[#FFC94A] hover:shadow-md hover:cursor-pointer"
                     }`}
                   >
                     <div className="flex items-center gap-4">
@@ -156,7 +155,7 @@ export default function GivePage() {
                       id="amount"
                       value={amount}
                       onChange={(e) => setAmount(e.target.value)}
-                      className="block w-full pl-7 rounded-md border-primary/20 bg-secondary text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                      className="block w-full pl-7 rounded-md bg-secondary shadow-sm shadow-[#FFC94A] outline-none  sm:text-sm h-8"
                       required
                       min="0"
                       step="0.01"
@@ -167,7 +166,7 @@ export default function GivePage() {
                 <div>
                   <label
                     htmlFor="frequency"
-                    className="block text-sm font-medium text-white"
+                    className="block text-sm font-medium"
                   >
                     Frequency
                   </label>
@@ -175,12 +174,12 @@ export default function GivePage() {
                     id="frequency"
                     value={frequency}
                     onChange={(e) => setFrequency(e.target.value)}
-                    className="mt-1 block w-full rounded-md border-primary/20 bg-secondary text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                    className="mt-1 block w-full rounded-md shadow-sm shadow-[#FFC94A] outline-none  sm:text-sm h-8 focus:border-primary bg-transparent"
                   >
-                    <option value="one-time">One-time</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="annually">Annually</option>
+                    <option value="one-time" className="bg-[#C08B5C]">One-time</option>
+                    <option value="weekly" className="bg-[#C08B5C]">Weekly</option>
+                    <option value="monthly" className="bg-[#C08B5C]">Monthly</option>
+                    <option value="annually" className="bg-[#C08B5C]">Annually</option>
                   </select>
                 </div>
 
@@ -198,7 +197,7 @@ export default function GivePage() {
                     onChange={(e) =>
                       setFormData({ ...formData, name: e.target.value })
                     }
-                    className="mt-1 block w-full rounded-md border-primary/20 bg-secondary text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                    className="mt-1 block w-full rounded-md shadow-sm shadow-[#FFC94A] outline-none   h-8 text-white focus:border-primary focus:ring-primary sm:text-sm"
                     required
                   />
                 </div>
@@ -217,7 +216,7 @@ export default function GivePage() {
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    className="mt-1 block w-full rounded-md border-primary/20 bg-secondary text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                    className="mt-1 block w-full rounded-md shadow-[#FFC94A] outline-none   h-8 shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     required
                   />
                 </div>
@@ -236,7 +235,7 @@ export default function GivePage() {
                     onChange={(e) =>
                       setFormData({ ...formData, phone: e.target.value })
                     }
-                    className="mt-1 block w-full rounded-md border-primary/20 bg-secondary text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                    className="mt-1 block w-full rounded-md shadow-[#FFC94A] outline-none   h-8 text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     required
                   />
                 </div>
@@ -255,7 +254,7 @@ export default function GivePage() {
                     onChange={(e) =>
                       setFormData({ ...formData, address: e.target.value })
                     }
-                    className="mt-1 block w-full rounded-md border-primary/20 bg-secondary text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                    className="mt-1 block w-full rounded-md shadow-[#FFC94A] outline-none   h-8 bg-secondary text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     required
                   />
                 </div>
@@ -275,7 +274,7 @@ export default function GivePage() {
                       onChange={(e) =>
                         setFormData({ ...formData, city: e.target.value })
                       }
-                      className="mt-1 block w-full rounded-md border-primary/20 bg-secondary text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                      className="mt-1 block w-full rounded-md shadow-[#FFC94A] outline-none   h-8 bg-secondary text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                       required
                     />
                   </div>
@@ -293,7 +292,7 @@ export default function GivePage() {
                       onChange={(e) =>
                         setFormData({ ...formData, state: e.target.value })
                       }
-                      className="mt-1 block w-full rounded-md border-primary/20 bg-secondary text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                      className="mt-1 block w-full rounded-md shadow-[#FFC94A] outline-none   h-8 text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                       required
                     />
                   </div>
@@ -313,14 +312,14 @@ export default function GivePage() {
                     onChange={(e) =>
                       setFormData({ ...formData, zipCode: e.target.value })
                     }
-                    className="mt-1 block w-full rounded-md border-primary/20 bg-secondary text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
+                    className="mt-1 block w-full rounded-md shadow-[#FFC94A] outline-none   h-8 text-white shadow-sm focus:border-primary focus:ring-primary sm:text-sm"
                     required
                   />
                 </div>
 
                 <button
                   type="submit"
-                  className="w-full rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-secondary shadow-sm hover:bg-primary-light focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="w-full rounded-md bg-primary px-3.5 py-2.5 text-sm font-semibold text-secondary shadow-sm shadow-[#FFC94A] outline-none hover:shadow-md hover:bg-primary-light focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-primary mb-6 hover:cursor-pointer"
                 >
                   Continue to Payment
                 </button>

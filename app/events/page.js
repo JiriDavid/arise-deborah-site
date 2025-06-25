@@ -46,7 +46,6 @@ export default function EventsPage() {
 
   return (
     <>
-      <Navigation />
       <div className="min-h-screen bg-secondary pt-12">
         {/* Hero Section */}
         <div className="relative isolate overflow-hidden">
