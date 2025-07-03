@@ -30,9 +30,9 @@ export default function RootLayout({ children }) {
               <SignInButton />
               <SignUpButton />
             </SignedOut>
-            <SignedIn>
+            {/* <SignedIn>
               <UserButton />
-            </SignedIn>
+            </SignedIn> */}
             {children}
           </LayoutProvider>
         </body>

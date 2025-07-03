@@ -8,8 +8,7 @@ const staff = [
   {
     name: "Pastor John Doe",
     role: "Senior Pastor",
-    image:
-      "/praise-1.jpg",
+    image: "/praise-1.jpg",
   },
   {
     name: "Sarah Smith",
@@ -54,7 +53,9 @@ export default function AboutPage() {
                 About Arise Deborah International
               </h1>
               <p className="mt-6 text-lg leading-8 text-white">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem
+                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                Quisquam, quos. Lorem Lorem ipsum dolor sit amet consectetur
+                adipisicing elit. Quisquam, quos. Lorem
               </p>
             </motion.div>
           </div>
@@ -62,76 +63,75 @@ export default function AboutPage() {
 
         {/* Mission & Vision */}
         <div className="bg-secondary-light grid grid-cols-2 gap-4 items-center justify-between mx-4 ">
-        <div className="mx-auto max-w-7xl px-6 lg:px-8 shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg col-span-2 md:col-span-1">
-          <div className="mx-auto max-w-2xl lg:text-center">
-            <h2 className="text-base font-semibold leading-7 text-primary">
-              Our Mission
-            </h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              To spread God's love and make disciples
-            </p>
-            <p className="mt-6 text-lg leading-8 text-white">
-              We are committed to creating a welcoming environment where
-              everyone can experience God's love and grow in their faith
-              journey.
-            </p>
+          <div className="mx-auto max-w-7xl px-6 lg:px-8 shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg col-span-2 md:col-span-1">
+            <div className="mx-auto max-w-2xl lg:text-center">
+              <h2 className="text-base font-semibold leading-7 text-primary">
+                Our Mission
+              </h2>
+              <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                To spread God's love and make disciples
+              </p>
+              <p className="mt-6 text-lg leading-8 text-white">
+                We are committed to creating a welcoming environment where
+                everyone can experience God's love and grow in their faith
+                journey.
+              </p>
+            </div>
+          </div>
+
+          {/* Core Beliefs */}
+          <div className="mx-auto max-w-7xl px-6   col-span-2 md:col-span-1 shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg">
+            <div className="mx-auto max-w-2xl lg:text-center">
+              <h2 className="text-base font-semibold leading-7 text-primary">
+                Core Beliefs
+              </h2>
+              <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                What We Believe In to Push Us Forward
+              </p>
+              <p className="mt-6 text-lg leading-8 text-white">
+                Our faith is grounded in the fundamental truths of Christianity.
+                Lorem ipsum dolor sit amet consectetur adipisicing elit.
+                Quisquam, quos. Lorem ipsum dolor sit
+              </p>
+            </div>
           </div>
         </div>
 
-        {/* Core Beliefs */}
-        <div className="mx-auto max-w-7xl px-6   col-span-2 md:col-span-1 shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg">
-          <div className="mx-auto max-w-2xl lg:text-center">
-            <h2 className="text-base font-semibold leading-7 text-primary">
-              Core Beliefs
-            </h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              What We Believe In to Push Us Forward
-            </p>
-            <p className="mt-6 text-lg leading-8 text-white">
-              Our faith is grounded in the fundamental truths of Christianity. Lorem ipsum dolor sit amet consectetur adipisicing elit. Quisquam, quos. Lorem ipsum dolor sit
-            </p>
-          </div>
-         
+        <div className="mx-4 mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none ">
+          <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
+            {[
+              {
+                title: "The Bible",
+                description:
+                  "We believe the Bible is the inspired and infallible Word of God.",
+              },
+              {
+                title: "Salvation",
+                description:
+                  "Salvation comes through faith in Jesus Christ alone.",
+              },
+              {
+                title: "The Church",
+                description:
+                  "The church is the body of Christ, called to make disciples.",
+              },
+            ].map((belief) => (
+              <motion.div
+                key={belief.title}
+                className="flex flex-col shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg"
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-primary">
+                  {belief.title}
+                </dt>
+                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-white">
+                  <p className="flex-auto">{belief.description}</p>
+                </dd>
+              </motion.div>
+            ))}
+          </dl>
         </div>
-        
-        </div>
-       
-         <div className="mx-4 mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none ">
-            <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
-              {[
-                {
-                  title: "The Bible",
-                  description:
-                    "We believe the Bible is the inspired and infallible Word of God.",
-                },
-                {
-                  title: "Salvation",
-                  description:
-                    "Salvation comes through faith in Jesus Christ alone.",
-                },
-                {
-                  title: "The Church",
-                  description:
-                    "The church is the body of Christ, called to make disciples.",
-                },
-              ].map((belief) => (
-                <motion.div
-                  key={belief.title}
-                  className="flex flex-col shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg"
-                  whileHover={{ scale: 1.05 }}
-                  transition={{ duration: 0.2 }}
-                >
-                  <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-primary">
-                    {belief.title}
-                  </dt>
-                  <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-white">
-                    <p className="flex-auto">{belief.description}</p>
-                  </dd>
-                </motion.div>
-              ))}
-            </dl>
-          </div>
-         
 
         {/* Staff Section */}
         <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">

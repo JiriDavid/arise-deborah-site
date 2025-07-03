@@ -1,46 +1,54 @@
+// app/admin/login/page.js
 "use client";
 
-import { SignIn } from "@clerk/nextjs";
+import { SignedIn, SignedOut, SignInButton, SignUpButton } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
-import { useAuth } from "@clerk/nextjs";
-import "next-cloudinary/dist/cld-video-player.css";
 
-export default function LoginPage() {
-  const { isLoaded, userId } = useAuth();
+export default function AdminLoginPage() {
   const router = useRouter();
 
-  useEffect(() => {
-    if (isLoaded && userId) {
-      router.push("/admin/sermons");
-    }
-  }, [isLoaded, userId, router]);
+  return (
+    <div className="min-h-screen flex items-center justify-center px-4">
+      {/* If signed in, redirect */}
+      <SignedIn>
+        <RedirectToDashboard router={router} />
+      </SignedIn>
 
-  if (!isLoaded) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+      {/* If signed out, show sign-in UI */}
+      <SignedOut>
+        <div className="text-center space-y-6">
+          <h2 className="text-3xl font-bold text-primary">Admin Login</h2>
+          <div className="flex flex-col gap-4 items-center">
+            <SignInButton mode="modal">
+              <button className="bg-primary text-white px-6 py-2 rounded-md hover:bg-primary-dark transition">
+                Sign In
+              </button>
+            </SignInButton>
+            <SignUpButton mode="modal">
+              <button className="text-primary hover:text-primary-dark underline transition">
+                Create an Account
+              </button>
+            </SignUpButton>
+          </div>
+        </div>
+      </SignedOut>
+    </div>
+  );
+}
+
+function RedirectToDashboard({ router }) {
+  const [hasRedirected, setHasRedirected] = useState(false);
+
+  useEffect(() => {
+    if (!hasRedirected) {
+      console.log("Redirecting to /admin/");
+      setHasRedirected(true);
+      router.replace("/admin/");
+    }
+  }, [router, hasRedirected]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-extrabold text-gray-900">Admin Login</h2>
-        </div>
-        <SignIn
-          appearance={{
-            elements: {
-              formButtonPrimary: "bg-primary hover:bg-primary-dark",
-              footerActionLink: "text-primary hover:text-primary-dark",
-            },
-          }}
-          afterSignInUrl="/admin/sermons"
-          signUpUrl="/admin/sign-up"
-        />
-      </div>
-    </div>
+    <div className="text-lg text-primary">Redirecting to dashboard...</div>
   );
 }

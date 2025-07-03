@@ -8,8 +8,8 @@ const publicRoutes = [
   "/events",
   "/contact",
   "/api/sermons",
-  "/admin/login",
-  "/admin/sign-up",
+  "/login",
+  "/sign-up",
 ];
 
 export default clerkMiddleware({
