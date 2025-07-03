@@ -97,8 +97,8 @@ export default function AdminDashboard() {
         >
           <FiUsers size={36} className="opacity-80" />
           <div>
-            <div className="text-2xl font-bold">{prayerRequests.length}</div>
-            <div className="text-lg">Prayer Requests</div>
+            <div className="text-2xl font-bold">{testimonies.length}</div>
+            <div className="text-lg">Testimonies</div>
           </div>
         </motion.div>
       </div>
@@ -118,10 +118,10 @@ export default function AdminDashboard() {
           <FiPlus /> Add Event
         </button>
         <button
-          onClick={() => router.push("/admin/prayer-requests")}
+          onClick={() => router.push("/admin/testimonies")}
           className="flex items-center gap-2 bg-tertiary hover:bg-tertiary-dark text-white px-5 py-3 rounded-lg font-semibold shadow shadow-[#FFC94A] transition-all duration-200"
         >
-          <FiPlus /> Add Prayer Request
+          <FiPlus /> Add Testimony
         </button>
       </div>
 
@@ -143,7 +143,7 @@ export default function AdminDashboard() {
                 className="flex justify-between items-center border-b pb-2"
               >
                 <span className="font-medium">{sermon.title}</span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs ">
                   {sermon.date?.slice(0, 10)}
                 </span>
               </li>
@@ -169,13 +169,13 @@ export default function AdminDashboard() {
                 className="flex justify-between items-center border-b pb-2"
               >
                 <span className="font-medium">{event.title}</span>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs ">
                   {event.date?.slice(0, 10)}
                 </span>
               </li>
             ))}
             {events.length === 0 && (
-              <li className="text-gray-400">No upcoming events.</li>
+              <li className="">No upcoming events.</li>
             )}
           </ul>
         </motion.div>
