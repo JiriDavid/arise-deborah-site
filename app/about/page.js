@@ -29,7 +29,6 @@ const staff = [
 export default function AboutPage() {
   return (
     <>
-      <Navigation />
       <div className="min-h-screen bg-secondary pt-12">
         {/* Hero Section */}
         <div className="relative isolate">

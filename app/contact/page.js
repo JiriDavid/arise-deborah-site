@@ -21,7 +21,6 @@ export default function ContactPage() {
 
   return (
     <div className="min-h-screen">
-      <Navigation />
       <div className="pt-42 pb-16 px-6">
         <div className="max-w-7xl mx-auto">
           <motion.div
