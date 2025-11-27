@@ -86,16 +86,28 @@ export default function PrayerRoomPage() {
         setToken(data.token);
       } else {
         console.error("Join room failed - response status:", response.status);
-        console.error("Join room failed - response headers:", Object.fromEntries(response.headers.entries()));
+        console.error(
+          "Join room failed - response headers:",
+          Object.fromEntries(response.headers.entries())
+        );
         try {
           const errorData = await response.json();
           console.error("Join room failed - error data:", errorData);
-          setError(errorData.error || `Failed to join room (${response.status})`);
+          setError(
+            errorData.error || `Failed to join room (${response.status})`
+          );
         } catch (jsonError) {
-          console.error("Join room failed - could not parse error response:", jsonError);
+          console.error(
+            "Join room failed - could not parse error response:",
+            jsonError
+          );
           const textResponse = await response.text();
           console.error("Join room failed - raw response:", textResponse);
-          setError(`Failed to join room (${response.status}): ${textResponse || 'Unknown error'}`);
+          setError(
+            `Failed to join room (${response.status}): ${
+              textResponse || "Unknown error"
+            }`
+          );
         }
       }
     } catch (error) {
@@ -238,9 +250,11 @@ export default function PrayerRoomPage() {
           console.error("Error details:", {
             message: error.message,
             name: error.name,
-            stack: error.stack
+            stack: error.stack,
           });
-          setError(`Connection failed: ${error.message || 'Unknown connection error'}`);
+          setError(
+            `Connection failed: ${error.message || "Unknown connection error"}`
+          );
           setToken("");
         }}
         className="h-full w-full"

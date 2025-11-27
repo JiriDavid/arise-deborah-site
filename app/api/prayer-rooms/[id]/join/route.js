@@ -18,9 +18,12 @@ const testToken = async () => {
       canSubscribe: true,
     });
     const token = await at.toJwt();
-    console.log("LiveKit credentials test - token:", token ? "generated" : "undefined");
+    console.log(
+      "LiveKit credentials test - token:",
+      token ? "generated" : "undefined"
+    );
     console.log("LiveKit credentials test - token type:", typeof token);
-    return token && typeof token === 'string' && token.length > 0;
+    return token && typeof token === "string" && token.length > 0;
   } catch (error) {
     console.error("LiveKit credentials test failed:", error);
     return false;
@@ -35,7 +38,7 @@ const LIVEKIT_URL = process.env.NEXT_PUBLIC_LIVEKIT_URL;
 console.log("Checking env:", {
   apiKey: process.env.LIVEKIT_API_KEY?.length,
   secret: process.env.LIVEKIT_API_SECRET?.length,
-  server: process.env.NEXT_PUBLIC_LIVEKIT_URL
+  server: process.env.NEXT_PUBLIC_LIVEKIT_URL,
 });
 
 export async function POST(request, { params }) {
@@ -118,7 +121,7 @@ export async function POST(request, { params }) {
       typeof token
     );
 
-    if (!token || typeof token !== 'string' || token.length === 0) {
+    if (!token || typeof token !== "string" || token.length === 0) {
       console.error("Failed to generate valid token");
       return NextResponse.json(
         { error: "Failed to generate access token" },
@@ -148,7 +151,7 @@ export async function POST(request, { params }) {
     console.error("Error details:", {
       message: error.message,
       stack: error.stack,
-      name: error.name
+      name: error.name,
     });
     return NextResponse.json(
       { error: `Server error: ${error.message}` },
