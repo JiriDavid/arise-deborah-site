@@ -16,6 +16,7 @@ export default function AdminDashboard() {
   const [sermons, setSermons] = useState([]);
   const [events, setEvents] = useState([]);
   const [testimonies, setTestimonies] = useState([]);
+  const [prayerRooms, setPrayerRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -25,14 +26,17 @@ export default function AdminDashboard() {
   useEffect(() => {
     async function fetchData() {
       try {
-        const [sermonRes, eventRes, testimonyRes] = await Promise.all([
-          axios.get("/api/sermons"),
-          axios.get("/api/events"),
-          axios.get("/api/testimonies"),
-        ]);
+        const [sermonRes, eventRes, testimonyRes, prayerRoomRes] =
+          await Promise.all([
+            axios.get("/api/sermons"),
+            axios.get("/api/events"),
+            axios.get("/api/testimonies"),
+            axios.get("/api/prayer-rooms"),
+          ]);
         setSermons(sermonRes.data);
         setEvents(eventRes.data);
         setTestimonies(testimonyRes.data);
+        setPrayerRooms(prayerRoomRes.data);
         // Placeholder: setPrayerRequests([]) or fetch if available
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -64,7 +68,7 @@ export default function AdminDashboard() {
   return (
     <div className="space-y-10">
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -101,6 +105,18 @@ export default function AdminDashboard() {
             <div className="text-lg">Testimonies</div>
           </div>
         </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8 }}
+          className="bg-purple-600 text-white rounded-xl shadow p-6 flex items-center gap-4 shadow-[#FFC94A]"
+        >
+          <FiVideo size={36} className="opacity-80" />
+          <div>
+            <div className="text-2xl font-bold">{prayerRooms.length}</div>
+            <div className="text-lg">Prayer Rooms</div>
+          </div>
+        </motion.div>
       </div>
 
       {/* Quick Actions */}
@@ -123,6 +139,12 @@ export default function AdminDashboard() {
         >
           <FiPlus /> Add Testimony
         </button>
+        <button
+          onClick={() => router.push("/admin/prayer-rooms")}
+          className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-5 py-3 rounded-lg font-semibold shadow shadow-[#FFC94A] transition-all duration-200"
+        >
+          <FiPlus /> Create Prayer Room
+        </button>
       </div>
 
       {/* Recent Activity */}
@@ -143,9 +165,7 @@ export default function AdminDashboard() {
                 className="flex justify-between items-center border-b pb-2"
               >
                 <span className="font-medium">{sermon.title}</span>
-                <span className="text-xs ">
-                  {sermon.date?.slice(0, 10)}
-                </span>
+                <span className="text-xs ">{sermon.date?.slice(0, 10)}</span>
               </li>
             ))}
             {sermons.length === 0 && (
@@ -169,14 +189,10 @@ export default function AdminDashboard() {
                 className="flex justify-between items-center border-b pb-2"
               >
                 <span className="font-medium">{event.title}</span>
-                <span className="text-xs ">
-                  {event.date?.slice(0, 10)}
-                </span>
+                <span className="text-xs ">{event.date?.slice(0, 10)}</span>
               </li>
             ))}
-            {events.length === 0 && (
-              <li className="">No upcoming events.</li>
-            )}
+            {events.length === 0 && <li className="">No upcoming events.</li>}
           </ul>
         </motion.div>
       </div>

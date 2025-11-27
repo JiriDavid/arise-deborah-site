@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import UpcomingEvents from "./components/UpcomingEvents";
+import { SignInButton, UserButton } from "@clerk/nextjs";
 
 const items = [
   {
@@ -19,13 +20,6 @@ const items = [
     link: "/sermons",
     icon: "🎤",
     bgImage: "/sermon.jpg",
-  },
-  {
-    title: "Get Involved",
-    description: "Discover ways to serve and connect with our community.",
-    link: "/ministries",
-    icon: "🤝",
-    bgImage: "/serve.jpg",
   },
 ];
 
@@ -71,6 +65,14 @@ export default function HomePage() {
                 >
                   Contact Us
                 </Link>
+                <div className="flex justify-center">
+                  <SignInButton
+                    mode="modal"
+                    className="rounded-md bg-secondary px-6 py-3 text-lg font-semibold text-tertiary shadow-sm hover:bg-secondary-light focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                  >
+                    Sign In
+                  </SignInButton>
+                </div>
               </div>
             </motion.div>
           </div>
@@ -79,36 +81,36 @@ export default function HomePage() {
 
       {/* Featured Sections */}
       <div className="py-24 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
-          {items.map((item) => (
-            <motion.div
-              key={item.title}
-              className="text-center shadow-[#FFC94A] p-8 rounded-lg shadow-sm bg-cover bg-center text-white relative overflow-hidden"
-              style={{ backgroundImage: `url(${item.bgImage})` }}
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.2 }}
-            >
-              {/* Overlay for better text contrast */}
-              <div className="absolute inset-0 bg-black/40 rounded-lg z-0" />
-              <div className="relative z-10">
-                <div className="text-4xl mb-4">{item.icon}</div>
-                <h3 className="text-xl font-semibold text-white mb-2">
-                  {item.title}
-                </h3>
-                <p className="mb-4 text-white">{item.description}</p>
-                <Link
-                  href={item.link}
-                  className="text-[#FFC94A] hover:text-yellow-400 font-medium transition-transform duration-300 hover:translate-x-1"
-                >
-                  Learn More →
-                </Link>
-              </div>
-            </motion.div>
-          ))}
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
+            {items.map((item) => (
+              <motion.div
+                key={item.title}
+                className="text-center shadow-[#FFC94A] p-8 rounded-lg shadow-sm bg-cover bg-center text-white relative overflow-hidden"
+                style={{ backgroundImage: `url(${item.bgImage})` }}
+                whileHover={{ scale: 1.05 }}
+                transition={{ duration: 0.2 }}
+              >
+                {/* Overlay for better text contrast */}
+                <div className="absolute inset-0 bg-black/40 rounded-lg z-0" />
+                <div className="relative z-10">
+                  <div className="text-4xl mb-4">{item.icon}</div>
+                  <h3 className="text-xl font-semibold text-white mb-2">
+                    {item.title}
+                  </h3>
+                  <p className="mb-4 text-white">{item.description}</p>
+                  <Link
+                    href={item.link}
+                    className="text-[#FFC94A] hover:text-yellow-400 font-medium transition-transform duration-300 hover:translate-x-1"
+                  >
+                    Learn More →
+                  </Link>
+                </div>
+              </motion.div>
+            ))}
+          </div>
         </div>
       </div>
-    </div>
 
       {/* Upcoming Events Section */}
       <UpcomingEvents />

@@ -3,11 +3,12 @@ import { clerkMiddleware } from "@clerk/nextjs/server";
 const publicRoutes = [
   "/",
   "/about",
-  "/ministries",
+  "/prayer-rooms",
   "/sermons",
   "/events",
   "/contact",
   "/api/sermons",
+  "/api/prayer-rooms",
   "/login",
   "/sign-up",
 ];

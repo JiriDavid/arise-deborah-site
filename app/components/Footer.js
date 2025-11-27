@@ -7,7 +7,6 @@ const navigation = {
     { name: "Home", href: "/" },
     { name: "About", href: "/about" },
     { name: "Sermons", href: "/sermons" },
-    { name: "Ministries", href: "/ministries" },
     { name: "Events", href: "/events" },
     { name: "Give", href: "/give" },
     { name: "Contact", href: "/contact" },
@@ -60,6 +59,9 @@ export default function Footer() {
     <footer className="text-[#FFC94A] bg border-t border-primary/20">
       <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
         <div className="flex justify-center space-x-6 md:order-2">
+          <Link href="/prayer-rooms" className="text-accent hover:text-primary">
+            Prayer Rooms
+          </Link>
           <Link href="/contact" className="text-accent hover:text-primary">
             Contact
           </Link>
@@ -72,8 +74,8 @@ export default function Footer() {
         </div>
         <div className="mt-8 md:order-1 md:mt-0">
           <p className="text-center text-sm leading-5 text-accent">
-            &copy; {new Date().getFullYear()} Arise Deborah International. All rights
-            reserved.
+            &copy; {new Date().getFullYear()} Arise Deborah International. All
+            rights reserved.
           </p>
         </div>
       </div>

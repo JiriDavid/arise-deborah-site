@@ -3,7 +3,7 @@
 import { useAuth, useUser, SignOutButton } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import Image from "next/image"
+import Image from "next/image";
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -22,13 +22,24 @@ export default function AdminLayout({ children }) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
-  useEffect(() => {
-    if (isLoaded && !userId) {
-      router.push("/admin/login");
-    }
-  }, [isLoaded, userId, router]);
+  const isAdmin =
+    user?.publicMetadata?.role === "admin" ||
+    user?.publicMetadata?.isAdmin === true;
 
-  if (!isLoaded || !userId) {
+  // TEMPORARY: Allow access for testing - REMOVE THIS IN PRODUCTION
+  const tempAllowAccess = true; // Set to false to enforce admin check
+
+  useEffect(() => {
+    if (isLoaded) {
+      if (!userId) {
+        router.push("/admin/login");
+      } else if (!isAdmin && !tempAllowAccess) {
+        router.push("/prayer-rooms");
+      }
+    }
+  }, [isLoaded, userId, isAdmin, router]);
+
+  if (!isLoaded || !userId || (!isAdmin && !tempAllowAccess)) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
@@ -71,6 +82,11 @@ export default function AdminLayout({ children }) {
             icon={<FiUsers />}
             text="Testimonies"
           />
+          <SidebarLink
+            href="/admin/prayer-rooms"
+            icon={<FiVideo />}
+            text="Prayer Rooms"
+          />
         </nav>
         <SignOutButton>
           <button className="mt-10 flex items-center gap-2 text-accent hover:text-accent-dark font-semibold transition-colors">
@@ -91,7 +107,7 @@ export default function AdminLayout({ children }) {
               <FiMenu size={24} className="text-primary" />
             </button>
             <span className="text-xl font-bold text-tertiary">
-              Welcome Back, ADI Admin Dashboard
+              Welcome Back 
             </span>
           </div>
           <div className="flex items-center gap-3">
