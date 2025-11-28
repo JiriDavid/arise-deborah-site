@@ -3,12 +3,18 @@ import mongoose from "mongoose";
 const PrayerRoomSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  date: { type: Date, required: true },
+  date: {
+    type: Date,
+    required: function requiredDate() {
+      return !this.isRecurringDaily;
+    },
+  },
   scheduledStartTime: { type: String, required: true },
   scheduledEndTime: { type: String, required: true },
   roomId: { type: String, required: true, unique: true },
   isActive: { type: Boolean, default: false },
   isScheduled: { type: Boolean, default: true },
+  isRecurringDaily: { type: Boolean, default: false },
   createdBy: { type: String, required: true }, // Clerk user ID
   participants: [
     {

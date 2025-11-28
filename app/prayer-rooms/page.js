@@ -7,6 +7,30 @@ import { motion } from "framer-motion";
 import { useUser } from "@clerk/nextjs";
 import { FiVideo, FiUsers, FiCalendar, FiClock, FiPlus } from "react-icons/fi";
 
+const MINUTES_IN_DAY = 24 * 60;
+
+const parseTimeToMinutes = (timeString) => {
+  if (!timeString) return null;
+  const [hours, minutes] = timeString.split(":").map(Number);
+  if ([hours, minutes].some((value) => Number.isNaN(value))) return null;
+  return hours * 60 + minutes;
+};
+
+const isWithinDailyWindow = (room) => {
+  if (!room?.isRecurringDaily) return false;
+  const now = new Date();
+  const nowMinutes = now.getHours() * 60 + now.getMinutes();
+  const startMinutes = parseTimeToMinutes(room.scheduledStartTime) ?? 0;
+  const endMinutes =
+    parseTimeToMinutes(room.scheduledEndTime) ?? MINUTES_IN_DAY - 1;
+
+  if (startMinutes === endMinutes) return true;
+  if (startMinutes < endMinutes) {
+    return nowMinutes >= startMinutes && nowMinutes <= endMinutes;
+  }
+  return nowMinutes >= startMinutes || nowMinutes <= endMinutes;
+};
+
 export default function PrayerRoomsPage() {
   const [prayerRooms, setPrayerRooms] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -36,23 +60,76 @@ export default function PrayerRoomsPage() {
 
   const getRoomStatus = (room) => {
     const now = new Date();
+
+    if (room.isActive) {
+      return {
+        status: "live",
+        color: "bg-red-500",
+        text: "LIVE",
+        canJoin: true,
+      };
+    }
+
+    if (room.isRecurringDaily) {
+      if (isWithinDailyWindow(room)) {
+        return {
+          status: "active",
+          color: "bg-green-500",
+          text: "IN SESSION",
+          canJoin: true,
+        };
+      }
+      return {
+        status: "daily",
+        color: "bg-purple-600",
+        text: "DAILY",
+        canJoin: false,
+      };
+    }
+
+    if (!room.date) {
+      return {
+        status: "unscheduled",
+        color: "bg-gray-500",
+        text: "UNSCHEDULED",
+        canJoin: false,
+      };
+    }
+
     const roomDate = new Date(room.date);
-    const [startHour, startMinute] = room.scheduledStartTime.split(":");
-    const [endHour, endMinute] = room.scheduledEndTime.split(":");
+    const [startHour, startMinute] = (room.scheduledStartTime || "00:00").split(
+      ":"
+    );
+    const [endHour, endMinute] = (room.scheduledEndTime || "00:00").split(":");
 
     const startTime = new Date(roomDate);
-    startTime.setHours(parseInt(startHour), parseInt(startMinute));
+    startTime.setHours(parseInt(startHour, 10), parseInt(startMinute, 10));
 
     const endTime = new Date(roomDate);
-    endTime.setHours(parseInt(endHour), parseInt(endMinute));
+    endTime.setHours(parseInt(endHour, 10), parseInt(endMinute, 10));
 
-    if (room.isActive)
-      return { status: "live", color: "bg-red-500", text: "LIVE" };
-    if (now >= startTime && now <= endTime)
-      return { status: "active", color: "bg-green-500", text: "IN SESSION" };
-    if (now < startTime)
-      return { status: "scheduled", color: "bg-blue-500", text: "SCHEDULED" };
-    return { status: "ended", color: "bg-gray-500", text: "ENDED" };
+    if (now >= startTime && now <= endTime) {
+      return {
+        status: "active",
+        color: "bg-green-500",
+        text: "IN SESSION",
+        canJoin: true,
+      };
+    }
+    if (now < startTime) {
+      return {
+        status: "scheduled",
+        color: "bg-blue-500",
+        text: "SCHEDULED",
+        canJoin: false,
+      };
+    }
+    return {
+      status: "ended",
+      color: "bg-gray-500",
+      text: "ENDED",
+      canJoin: false,
+    };
   };
 
   if (loading) {
@@ -99,6 +176,14 @@ export default function PrayerRoomsPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {prayerRooms.map((room, index) => {
             const roomStatus = getRoomStatus(room);
+            const dateDisplay = room.isRecurringDaily
+              ? "Available Daily"
+              : room.date
+              ? format(new Date(room.date), "PPP")
+              : "Date TBD";
+            const timeDisplay = `${room.scheduledStartTime || "--:--"} - ${
+              room.scheduledEndTime || "--:--"
+            }`;
             return (
               <motion.div
                 key={room._id}
@@ -125,6 +210,11 @@ export default function PrayerRoomsPage() {
                   <h3 className="text-xl font-semibold text-tertiary mb-2">
                     {room.title}
                   </h3>
+                  {room.isRecurringDaily && (
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-600 mb-2">
+                      Daily Window
+                    </span>
+                  )}
                   <p className="text-accent mb-4 line-clamp-2">
                     {room.description}
                   </p>
@@ -132,11 +222,13 @@ export default function PrayerRoomsPage() {
                   <div className="space-y-2 mb-4">
                     <div className="flex items-center text-sm text-accent">
                       <FiCalendar className="w-4 h-4 mr-2" />
-                      {format(new Date(room.date), "PPP")}
+                      {dateDisplay}
                     </div>
                     <div className="flex items-center text-sm text-accent">
                       <FiClock className="w-4 h-4 mr-2" />
-                      {room.scheduledStartTime} - {room.scheduledEndTime}
+                      {room.isRecurringDaily
+                        ? `Daily • ${timeDisplay}`
+                        : timeDisplay}
                     </div>
                     <div className="flex items-center text-sm text-accent">
                       <FiUsers className="w-4 h-4 mr-2" />
@@ -144,8 +236,7 @@ export default function PrayerRoomsPage() {
                     </div>
                   </div>
 
-                  {(roomStatus.status === "live" ||
-                    roomStatus.status === "active") && (
+                  {roomStatus.canJoin ? (
                     <Link
                       href={`/prayer-rooms/${room._id}`}
                       className="w-full bg-green-700 text-white py-3 px-4 rounded-lg hover:bg-green-800 transition-colors flex items-center justify-center gap-2"
@@ -153,17 +244,15 @@ export default function PrayerRoomsPage() {
                       <FiVideo size={20} />
                       Join Prayer Session
                     </Link>
-                  )}
-
-                  {roomStatus.status === "scheduled" && (
+                  ) : (
                     <div className="w-full bg-gray-200 text-gray-600 py-3 px-4 rounded-lg text-center">
-                      Starts at {room.scheduledStartTime}
-                    </div>
-                  )}
-
-                  {roomStatus.status === "ended" && (
-                    <div className="w-full bg-gray-200 text-gray-600 py-3 px-4 rounded-lg text-center">
-                      Session Ended
+                      {roomStatus.status === "scheduled"
+                        ? `Starts at ${room.scheduledStartTime}`
+                        : roomStatus.status === "daily"
+                        ? `Reopens daily at ${room.scheduledStartTime}`
+                        : roomStatus.status === "ended"
+                        ? "Session Ended"
+                        : "Not currently available"}
                     </div>
                   )}
                 </div>

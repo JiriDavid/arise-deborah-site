@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/app/lib/mongodb";
 import PrayerRoom from "@/app/models/PrayerRoom";
-import { auth } from "@clerk/nextjs/server";
+import { getAdminUser } from "@/app/lib/adminAuth";
 
 // GET specific prayer room
 export async function GET(request, { params }) {
@@ -28,14 +28,10 @@ export async function GET(request, { params }) {
 // PUT update prayer room (admin only)
 export async function PUT(request, { params }) {
   try {
-    const { userId, user } = await auth();
-    if (!userId || !user) {
+    const { user, isAdmin } = await getAdminUser();
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const isAdmin =
-      user.publicMetadata?.role === "admin" ||
-      user.publicMetadata?.isAdmin === true;
     if (!isAdmin) {
       return NextResponse.json(
         { error: "Admin access required" },
@@ -70,14 +66,10 @@ export async function PUT(request, { params }) {
 // DELETE prayer room (admin only)
 export async function DELETE(request, { params }) {
   try {
-    const { userId, user } = await auth();
-    if (!userId || !user) {
+    const { user, isAdmin } = await getAdminUser();
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const isAdmin =
-      user.publicMetadata?.role === "admin" ||
-      user.publicMetadata?.isAdmin === true;
     if (!isAdmin) {
       return NextResponse.json(
         { error: "Admin access required" },

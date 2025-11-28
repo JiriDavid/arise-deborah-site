@@ -7,9 +7,17 @@ import Footer from "./Footer";
 export default function LayoutProvider({ children }) {
   const pathname = usePathname();
   const isAdminRoute = pathname.startsWith("/admin");
+  const immersiveRoutes = ["/prayer-rooms/"];
+  const isImmersiveExperience = immersiveRoutes.some((route) =>
+    pathname.startsWith(route)
+  );
 
   if (isAdminRoute) {
     return children; // no layout for admin pages
+  }
+
+  if (isImmersiveExperience) {
+    return <main className="min-h-screen bg-[#050203]">{children}</main>;
   }
 
   return (

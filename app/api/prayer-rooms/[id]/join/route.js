@@ -4,6 +4,81 @@ import { auth } from "@clerk/nextjs/server";
 import connectDB from "@/app/lib/mongodb";
 import PrayerRoom from "@/app/models/PrayerRoom";
 
+const MINUTES_IN_DAY = 24 * 60;
+
+const parseTimeToMinutes = (timeString) => {
+  if (!timeString || typeof timeString !== "string") {
+    return null;
+  }
+
+  const [hours, minutes] = timeString.split(":").map(Number);
+  if ([hours, minutes].some((value) => Number.isNaN(value))) {
+    return null;
+  }
+  return hours * 60 + minutes;
+};
+
+const buildDateWithTime = (dateInput, timeString) => {
+  if (!dateInput) return null;
+  const baseDate = new Date(dateInput);
+  if (Number.isNaN(baseDate.getTime())) return null;
+  const [hours, minutes] = (timeString || "00:00").split(":").map(Number);
+  if ([hours, minutes].some((value) => Number.isNaN(value))) {
+    return null;
+  }
+
+  const result = new Date(baseDate);
+  result.setHours(hours, minutes, 0, 0);
+  return result;
+};
+
+const isWithinDailyWindow = (room, referenceDate = new Date()) => {
+  if (!room?.isRecurringDaily) {
+    return false;
+  }
+
+  const nowMinutes = referenceDate.getHours() * 60 + referenceDate.getMinutes();
+  const startMinutes = parseTimeToMinutes(room.scheduledStartTime);
+  const endMinutes = parseTimeToMinutes(room.scheduledEndTime);
+
+  if (startMinutes === null && endMinutes === null) {
+    return true;
+  }
+
+  const start = startMinutes ?? 0;
+  const end = endMinutes ?? MINUTES_IN_DAY - 1;
+
+  if (start === end) {
+    return true;
+  }
+
+  if (start < end) {
+    return nowMinutes >= start && nowMinutes <= end;
+  }
+
+  return nowMinutes >= start || nowMinutes <= end;
+};
+
+const isWithinSingleSchedule = (room, referenceDate = new Date()) => {
+  if (!room?.date) {
+    return false;
+  }
+
+  const start = buildDateWithTime(room.date, room.scheduledStartTime);
+  const end = buildDateWithTime(room.date, room.scheduledEndTime);
+
+  if (!start || !end) {
+    return false;
+  }
+
+  const adjustedEnd = new Date(end);
+  if (adjustedEnd <= start) {
+    adjustedEnd.setDate(adjustedEnd.getDate() + 1);
+  }
+
+  return referenceDate >= start && referenceDate <= adjustedEnd;
+};
+
 // Test LiveKit credentials
 const testToken = async () => {
   try {
@@ -85,13 +160,17 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 
-    // Check if room is active or scheduled
+    // Check if room is active or within its scheduled window
     const now = new Date();
-    const isRoomActive = room.isActive || room.isScheduled; // Temporarily allow all scheduled rooms
+    const withinDailyWindow = isWithinDailyWindow(room, now);
+    const withinSingleWindow = isWithinSingleSchedule(room, now);
+    const isRoomActive = Boolean(
+      room.isActive || withinDailyWindow || withinSingleWindow
+    );
 
     if (!isRoomActive) {
       return NextResponse.json(
-        { error: "Room is not currently active" },
+        { error: "Room is not currently active for this time window" },
         { status: 403 }
       );
     }

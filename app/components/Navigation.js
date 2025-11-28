@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -20,10 +20,25 @@ const navigation = [
 
 const Navigation = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
 
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
   return (
-    <header className="fixed w-full z-50 backdrop-blur-sm border-b border-[#FFC94A] text-[#FFC94A]">
+    <header
+      className={`fixed w-full z-50 border-b border-[#FFC94A] text-[#FFC94A] transition backdrop-filter ${
+        isScrolled ? "backdrop-blur-sm bg-black/30" : ""
+      }`}
+    >
       <nav
         className="mx-auto flex w-full items-center justify-between p-6 lg:px-8"
         aria-label="Global"

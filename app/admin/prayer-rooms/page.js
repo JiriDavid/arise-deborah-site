@@ -16,6 +16,7 @@ export default function AdminPrayerRoomsPage() {
     scheduledEndTime: "",
     maxParticipants: 50,
     tags: "",
+    isRecurringDaily: false,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,18 +37,28 @@ export default function AdminPrayerRoomsPage() {
     setError("");
 
     try {
+      const tagsArray = formData.tags
+        .split(",")
+        .map((tag) => tag.trim())
+        .filter(Boolean);
+
+      const payload = {
+        title: formData.title,
+        description: formData.description,
+        date: formData.isRecurringDaily ? null : formData.date || null,
+        scheduledStartTime: formData.scheduledStartTime,
+        scheduledEndTime: formData.scheduledEndTime,
+        maxParticipants: Number(formData.maxParticipants) || 1,
+        isRecurringDaily: formData.isRecurringDaily,
+        tags: tagsArray,
+      };
+
       const response = await fetch("/api/prayer-rooms", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          ...formData,
-          tags: formData.tags
-            .split(",")
-            .map((tag) => tag.trim())
-            .filter(Boolean),
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -146,9 +157,16 @@ export default function AdminPrayerRoomsPage() {
                 name="date"
                 value={formData.date}
                 onChange={handleInputChange}
-                required
+                required={!formData.isRecurringDaily}
+                disabled={formData.isRecurringDaily}
                 className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
               />
+              {formData.isRecurringDaily && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Daily rooms ignore a specific date and reopen every day at the
+                  scheduled times.
+                </p>
+              )}
             </div>
 
             <div>
@@ -211,6 +229,42 @@ export default function AdminPrayerRoomsPage() {
               placeholder="morning, worship, community (comma-separated)"
               className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent"
             />
+          </div>
+
+          <div className="flex items-center justify-between gap-4 border rounded-lg p-4">
+            <div>
+              <p className="text-sm font-semibold text-tertiary">
+                Make this a daily room
+              </p>
+              <p className="text-xs text-accent">
+                Daily rooms reopen every day at the times above. The specific
+                calendar date is ignored.
+              </p>
+            </div>
+            <label className="inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={formData.isRecurringDaily}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    isRecurringDaily: e.target.checked,
+                  }))
+                }
+              />
+              <span
+                className={`w-12 h-6 flex items-center rounded-full p-1 transition-all ${
+                  formData.isRecurringDaily ? "bg-primary" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`bg-white w-4 h-4 rounded-full shadow transform transition-transform ${
+                    formData.isRecurringDaily ? "translate-x-6" : ""
+                  }`}
+                ></span>
+              </span>
+            </label>
           </div>
 
           <div className="flex gap-4 pt-4">

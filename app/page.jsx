@@ -4,9 +4,10 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 import UpcomingEvents from "./components/UpcomingEvents";
-import { SignInButton, UserButton } from "@clerk/nextjs";
+import { SignInButton } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 
-const items = [
+const featuredItems = [
   {
     title: "UK 5AM Prayer Session",
     description: "Join us everyday at 5:00 AM for prayers and the Word.",
@@ -21,102 +22,243 @@ const items = [
     icon: "🎤",
     bgImage: "/sermon.jpg",
   },
+  {
+    title: "Testimonies",
+    description: "Read stories of transformation from our global family.",
+    link: "/testimonies",
+    icon: "💬",
+    bgImage: "/testimony.jpg",
+  },
+];
+
+const communityStats = [
+  { label: "Daily Prayer", value: "5AM", accent: "Faith Room" },
+  { label: "Nations Reached", value: "18+", accent: "Global" },
+  { label: "Sermons Online", value: "120+", accent: "Library" },
+];
+
+const ministryHighlights = [
+  {
+    title: "Mentorship Circles",
+    description:
+      "Monthly equipping rooms where women receive guidance, covering, and accountability.",
+  },
+  {
+    title: "Prayer Rooms",
+    description:
+      "Simplified access to immersive LiveKit sessions for intercession, healing, and communion.",
+  },
+  {
+    title: "Kingdom Initiatives",
+    description:
+      "Strategic outreaches, conferences, and community projects led by the Arise Deborah network.",
+  },
+];
+
+const heroImages = [
+  "/arise-5.jpeg",
+  "/arise-6.jpeg",
+  "/arise-8.jpeg",
+  "/arise-10.jpeg",
+  "/arise-11.jpeg",
+  "/arise-9.jpeg",
 ];
 
 export default function HomePage() {
+  const [activeSlide, setActiveSlide] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveSlide((prev) => (prev + 1) % heroImages.length);
+    }, 6000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   return (
-    <div className="min-h-screen ">
+    <div className="min-h-screen">
       {/* Hero Section */}
-      <div className="relative h-screen">
-        <Image
-          src="/praise-3.jpeg"
-          alt="Church interior"
-          fill
-          sizes="100vw"
-          className="object-cover"
-          priority
-          quality={90}
-        />
-        <div className="absolute inset-0 text-[#E6B53D] bg-black/40">
-          <div className="flex items-center justify-center h-full">
+      <section className="relative h-screen">
+        <div className="absolute inset-0 overflow-hidden">
+          {heroImages.map((src, index) => (
+            <Image
+              key={src}
+              src={src}
+              alt="Arise Deborah"
+              fill
+              sizes="100vw"
+              priority={index === 0}
+              quality={90}
+              className={`object-cover transition-opacity duration-[2000ms] ease-in-out ${
+                activeSlide === index ? "opacity-100" : "opacity-0"
+              }`}
+            />
+          ))}
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 text-[#E6B53D]">
+          <div className="flex items-center justify-center h-full px-6">
             <motion.div
-              className="text-center px-6"
+              className="text-center max-w-4xl"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h1 className="text-5xl md:text-7xl font-bold text-tertiary mb-6">
-                Welcome to Arise Deborah International
-              </h1>
-              <p className="text-xl md:text-2xl text-accent mb-12 max-w-3xl mx-auto ">
-                A place of worship, community, and spiritual growth where faith
-                comes alive.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link
-                  href="/about"
-                  className="rounded-md bg-primary px-6 py-3 text-lg font-semibold text-tertiary shadow-sm shadow-[#FFC94A] hover:bg-primary-light focus-visible:outline  focus-visible:outline-offset-2 focus-visible:outline-primary hover:shadow-md"
-                >
-                  Learn More
-                </Link>
+              <div className="flex items-center justify-center mb-6 space-x-1">
+                <p className="uppercase tracking-[0.35em] text-sm text-[#FFC94A]/90 ">
+                  Arise Deborah International
+                </p>
                 <Link
                   href="/contact"
-                  className="rounded-md text-white bg-[#E6B53D] px-6 py-3 text-lg font-semibold text-tertiary border-primary shadow-sm hover:bg-primary focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="rounded-md text-white bg-[#937a38] px-2 py-1 text-lg font-semibold text-tertiary border-primary shadow-sm hover:bg-[#a28535] focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   Contact Us
                 </Link>
                 <div className="flex justify-center">
                   <SignInButton
                     mode="modal"
-                    className="rounded-md bg-secondary px-6 py-3 text-lg font-semibold text-tertiary shadow-sm hover:bg-secondary-light focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-secondary"
+                    className="rounded-md bg-[#3a6b25] px-2 py-1 text-lg font-semibold text-tertiary shadow-sm hover:bg-[#4a7b35] focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-secondary cursor-pointer"
                   >
                     Sign In
                   </SignInButton>
                 </div>
               </div>
+
+              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
+                A House of Prayer, Leadership, and Revival
+              </h1>
+              <p className="text-lg md:text-2xl text-[#FFE9B5] mb-10">
+                Faith-filled gatherings, prophetic prayer rooms, and spirit-led
+                mentorship for women called to influence culture.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                {/* <Link
+                  href="/about"
+                  className="rounded-md bg-primary px-6 py-3 text-lg font-semibold text-tertiary shadow-sm shadow-[#FFC94A] hover:bg-primary-light focus-visible:outline  focus-visible:outline-offset-2 focus-visible:outline-primary hover:shadow-md"
+                >
+                  Learn More
+                </Link> */}
+              </div>
             </motion.div>
           </div>
         </div>
-      </div>
-
-      {/* Featured Sections */}
-      <div className="py-24 px-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {items.map((item) => (
-              <motion.div
-                key={item.title}
-                className="text-center shadow-[#FFC94A] p-8 rounded-lg shadow-sm bg-cover bg-center text-white relative overflow-hidden"
-                style={{ backgroundImage: `url(${item.bgImage})` }}
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
+        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-4xl px-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {communityStats.map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-2xl border border-white/20 bg-white/5 backdrop-blur-lg py-4 px-6 text-center"
               >
-                {/* Overlay for better text contrast */}
-                <div className="absolute inset-0 bg-black/40 rounded-lg z-0" />
-                <div className="relative z-10">
-                  <div className="text-4xl mb-4">{item.icon}</div>
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    {item.title}
-                  </h3>
-                  <p className="mb-4 text-white">{item.description}</p>
-                  <Link
-                    href={item.link}
-                    className="text-[#FFC94A] hover:text-yellow-400 font-medium transition-transform duration-300 hover:translate-x-1"
-                  >
-                    Learn More →
-                  </Link>
-                </div>
-              </motion.div>
+                <p className="text-sm uppercase tracking-[0.3em] text-[#FFC94A]">
+                  {stat.label}
+                </p>
+                <p className="text-3xl font-bold text-white">{stat.value}</p>
+                <p className="text-sm text-white/70">{stat.accent}</p>
+              </div>
             ))}
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* Featured Sections */}
+      {/* <section className="py-24 px-6">
+        <div className="max-w-6xl mx-auto text-center mb-12">
+          <p className="text-sm uppercase tracking-[0.35em] text-accent mb-2">
+            Featured Rhythms
+          </p>
+          <h2 className="text-3xl md:text-4xl font-bold text-tertiary">
+            Encounters that shape your week
+          </h2>
+          <p className="text-accent mt-3">
+            Daily prayer lobbies, on-demand sermons, and testimonies to build
+            your faith.
+          </p>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
+          {featuredItems.map((item) => (
+            <motion.div
+              key={item.title}
+              className="text-center shadow-[#FFC94A]/50 p-8 rounded-3xl shadow-sm bg-cover bg-center text-white relative overflow-hidden"
+              style={{ backgroundImage: `url(${item.bgImage})` }}
+              whileHover={{ scale: 1.03 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="absolute inset-0 bg-black/50 rounded-3xl" />
+              <div className="relative z-10 flex flex-col gap-4">
+                <div className="text-4xl">{item.icon}</div>
+                <div>
+                  <h3 className="text-2xl font-semibold text-white">
+                    {item.title}
+                  </h3>
+                  <p className="mt-2 text-white/80">{item.description}</p>
+                </div>
+                <Link
+                  href={item.link}
+                  className="inline-flex items-center justify-center gap-2 text-[#FFC94A] font-semibold"
+                >
+                  Learn More →
+                </Link>
+              </div>
+            </motion.div>
+          ))}
+        </div>
+      </section> */}
 
       {/* Upcoming Events Section */}
       <UpcomingEvents />
 
+      {/* Ministry Highlights */}
+      <section className="py-20 px-6">
+        <div className="max-w-6xl mx-auto grid gap-10 lg:grid-cols-[1.2fr,0.8fr]">
+          <div className="rounded-3xl border border-[#f5d6a3]/70  p-8 shadow-lg">
+            <p className="text-xs uppercase tracking-[0.35em] text-secondary">
+              Deepen Your Roots
+            </p>
+            <h3 className="text-3xl font-semibold text-tertiary mt-3">
+              Ministries and rooms for women leading with grace
+            </h3>
+            <p className="text-accent mt-4">
+              Whether you are cultivating a prayer altar at home, building
+              influence in the marketplace, or guiding a community, Arise
+              Deborah offers curated spaces to equip you.
+            </p>
+            <div className="mt-8 space-y-5">
+              {ministryHighlights.map((highlight) => (
+                <div
+                  key={highlight.title}
+                  className="rounded-2xl border border-[#fbe0b6]  p-5"
+                >
+                  <h4 className="text-xl font-semibold text-tertiary">
+                    {highlight.title}
+                  </h4>
+                  <p className="text-accent mt-1">{highlight.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-black/80 text-white p-8 flex flex-col gap-6 shadow-2xl">
+            <p className="text-sm uppercase tracking-[0.35em] text-[#FFC94A]">
+              Prayer Focus
+            </p>
+            <p className="text-2xl font-semibold">
+              “We watch women rise daily with prophetic clarity, healing, and
+              kingdom solutions.”
+            </p>
+            <p className="text-white/70 text-sm">
+              - Apostle Dr Joice Chiyaka, Visionary
+            </p>
+            <Link
+              href="/prayer-rooms"
+              className="inline-flex items-center justify-center rounded-2xl bg-[#FFC94A] px-6 py-3 font-semibold text-[#2B1B0F] shadow-lg shadow-[#FFC94A]/30"
+            >
+              Explore Prayer Rooms
+            </Link>
+          </div>
+        </div>
+      </section>
+
       {/* Call to Action */}
-      <div className="py-24 px-6 bg-secondary/10 shadow-sm mb-6 shadow-[#FFC94A] mx-6 rounded-lg">
+      {/* <section className="py-24 px-6 bg-secondary/10 shadow-sm mb-6 shadow-[#FFC94A] mx-6 rounded-lg">
         <div className="max-w-7xl mx-auto text-center">
           <h2 className="text-3xl font-bold tracking-tight text-tertiary sm:text-4xl mb-6">
             Join Us This Sunday
@@ -132,7 +274,7 @@ export default function HomePage() {
             Plan Your Visit
           </Link>
         </div>
-      </div>
+      </section> */}
     </div>
   );
 }

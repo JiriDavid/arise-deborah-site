@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import connectDB from "@/app/lib/mongodb";
 import PrayerRoom from "@/app/models/PrayerRoom";
-import { auth } from "@clerk/nextjs/server";
+import { getAdminUser } from "@/app/lib/adminAuth";
 
 // GET all prayer rooms
 export async function GET() {
@@ -23,19 +23,12 @@ export async function GET() {
 // POST create new prayer room (admin only)
 export async function POST(request) {
   try {
-    const { userId, user } = await auth();
-    if (!userId || !user) {
+    const { user, isAdmin } = await getAdminUser();
+    if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Check if user is admin (you'll need to implement this based on your Clerk setup)
-    // TEMPORARY: Allow access for testing - REMOVE THIS IN PRODUCTION
-    const tempAllowAccess = true; // Set to false to enforce admin check
-    const isAdmin =
-      user.publicMetadata?.role === "admin" ||
-      user.publicMetadata?.isAdmin === true;
-
-    if (!isAdmin && !tempAllowAccess) {
+    if (!isAdmin) {
       return NextResponse.json(
         { error: "Admin access required" },
         { status: 403 }
@@ -53,7 +46,7 @@ export async function POST(request) {
     const prayerRoom = await PrayerRoom.create({
       ...data,
       roomId,
-      createdBy: userId,
+      createdBy: user.id,
     });
 
     return NextResponse.json(prayerRoom, { status: 201 });
