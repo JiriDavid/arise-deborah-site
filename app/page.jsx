@@ -142,7 +142,9 @@ export default function HomePage() {
                 <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#FFC94A]">
                   {stat.label}
                 </p>
-                <p className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-white">
+                  {stat.value}
+                </p>
                 <p className="text-sm text-white/70">{stat.accent}</p>
               </div>
             ))}
