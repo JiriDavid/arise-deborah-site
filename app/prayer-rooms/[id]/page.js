@@ -448,14 +448,19 @@ export default function PrayerRoomPage() {
                 <div className="flex-1">
                   <VideoConferenceComponent />
                 </div>
-                <div className="w-full lg:w-80  border-t lg:border-t-0 lg:border-l border-white/10">
+                <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-white/10 lg:relative">
                   <Chat />
                 </div>
               </div>
 
-              <div className=" border-t border-white/10 px-6 py-4">
-                {/* <ControlBar /> */}
+              <div className="hidden lg:block border-t border-white/10 px-6 py-4">
+                <ControlBar />
               </div>
+            </div>
+
+            {/* Mobile controls overlay */}
+            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm border-t border-white/10 px-4 py-3 z-50">
+              <ControlBar />
             </div>
 
             <RoomAudioRenderer />
