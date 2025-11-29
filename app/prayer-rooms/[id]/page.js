@@ -163,6 +163,13 @@ export default function PrayerRoomPage() {
 
   const handleLeaveRoom = () => exitRoom("/prayer-rooms");
 
+  const handleDisconnected = (reason) => {
+    console.log("LiveKit disconnected with reason:", reason);
+    // Don't auto-redirect, show error instead
+    setError(`Connection lost: ${reason || "Unknown reason"}`);
+    setToken(""); // Clear token to show join screen again
+  };
+
   const messageFormatter = (message) => (
     <div className="flex justify-start mb-2">
       <div className="bg-white/10 text-white px-4 py-2 rounded-2xl max-w-xs">
