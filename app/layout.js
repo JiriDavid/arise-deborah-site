@@ -21,10 +21,7 @@ export default function RootLayout({ children }) {
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
-        <body
-          className={`${inter.className}`}
-          suppressHydrationWarning
-        >
+        <body className={`${inter.className}`} suppressHydrationWarning>
           <LayoutProvider>
             <SignedOut>
               <SignInButton />
