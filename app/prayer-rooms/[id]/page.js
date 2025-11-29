@@ -452,6 +452,7 @@ export default function PrayerRoomPage() {
                   <VideoConferenceComponent />
                 </div>
                 <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-white/10 lg:relative pb-20 lg:pb-0">
+                  <h3 className="text-lg font-semibold text-white mb-4 pt-4 px-4 lg:px-0">Messages</h3>
                   <Chat />
                 </div>
               </div>
