@@ -12,6 +12,7 @@ import {
   Chat,
   useTracks,
   useRoomContext,
+  GridLayout,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { Track } from "livekit-client";
@@ -21,7 +22,9 @@ function VideoConferenceComponent() {
 
   return (
     <div className="h-full w-full">
-      <VideoConference controlBar={false} />
+      <GridLayout tracks={tracks}>
+        <ParticipantTile />
+      </GridLayout>
     </div>
   );
 }
@@ -206,7 +209,7 @@ export default function PrayerRoomPage() {
 
   if (!token) {
     return (
-      <div className="relative min-h-screen  text-white overflow-hidden">bg-[#060406]
+      <div className="relative min-h-screen  text-white overflow-hidden">
         <div className="absolute inset-0 opacity-50 from-[#160a05] via-transparent to-[#050203]" />
         <div className="absolute -top-1/3 -right-1/4 w-[600px] h-[600px] bg-[#FFC94A]/10 blur-3xl rounded-full" />
         <div className="absolute -bottom-1/3 -left-1/4 w-[500px] h-[500px] bg-[#C08B5C]/10 blur-3xl rounded-full" />
