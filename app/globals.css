@@ -17,3 +17,14 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Hide LiveKit Chat default header */
+.lk-chat-header {
+  display: none !important;
+}
+
+/* Remove outline on chat input focus */
+.lk-chat input:focus {
+  outline: none !important;
+  box-shadow: none !important;
+}
