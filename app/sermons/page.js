@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import Image from "next/image";
+import { useEffect, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { format } from "date-fns";
 import { CldVideoPlayer } from "next-cloudinary";
 import "next-cloudinary/dist/cld-video-player.css";
@@ -10,9 +11,14 @@ const categories = [
   "All",
   "Sunday Service",
   "Bible Study",
-  "Special Event",
-  "Youth Service",
-  "Women's Ministry",
+  "Events",,
+  "Ministry",
+];
+
+const heroHighlights = [
+  { label: "Weekly streams", value: "4" },
+  { label: "Podcast plays", value: "18k" },
+  { label: "Cities tuning in", value: "27" },
 ];
 
 export default function SermonsPage() {
@@ -34,52 +40,84 @@ export default function SermonsPage() {
     fetchSermons();
   }, []);
 
-  const filteredSermons = sermons.filter((sermon) => {
-    const matchesCategory =
-      selectedCategory === "All" || sermon.category === selectedCategory;
-    const matchesSearch =
-      sermon.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sermon.preacher.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      sermon.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
-  });
+  const filteredSermons = useMemo(() => {
+    return sermons.filter((sermon) => {
+      const title = sermon.title || "Untitled";
+      const preacher = sermon.preacher || "Arise Team";
+      const description = sermon.description || "";
+      const matchesCategory =
+        selectedCategory === "All" || sermon.category === selectedCategory;
+      const matchesSearch =
+        title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        preacher.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        description.toLowerCase().includes(searchQuery.toLowerCase());
+      return matchesCategory && matchesSearch;
+    });
+  }, [searchQuery, selectedCategory, sermons]);
 
   return (
-    <div className="min-h-screen pt-24 pb-16 px-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-[#0d0906 text-white pt-32 pb-20">
+      <div className="mx-auto max-w-6xl px-6">
         {/* Hero */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-          className="text-center mb-16"
-        >
-          <h1 className="text-4xl font-bold text-tertiary mb-4">Sermons</h1>
-          <p className="text-lg text-accent max-w-2xl mx-auto">
-            Watch or listen to our latest messages and be inspired by God's
-            Word.
+        <section className="rounded-3xl border border-white/10 bg-gradient-to-r from-[#25130b] via-[#34160a] to-[#461a09] p-10">
+          <p className="text-xs uppercase tracking-[0.35em] text-[#FFC94A]">
+            Latest messages
           </p>
-        </motion.div>
+          <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-3">
+              <h1 className="text-4xl font-semibold leading-tight">
+                Sermons that disciple women for prayer, leadership, and impact.
+              </h1>
+              <p className="text-white/80">
+                Search the archive, filter by gathering, and stream in video or
+                audio formats anywhere in the world.
+              </p>
+            </div>
+            <button className="inline-flex items-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:border-[#FFC94A] hover:text-[#FFC94A]">
+              Subscribe to podcast →
+            </button>
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            {heroHighlights.map((highlight) => (
+              <div
+                key={highlight.label}
+                className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+              >
+                <p className="text-3xl font-semibold text-[#FFC94A]">
+                  {highlight.value}
+                </p>
+                <p className="text-xs uppercase tracking-[0.3em] text-white/70">
+                  {highlight.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
 
-        {/* Search & Filter */}
-        <div className="mb-12">
-          <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-            <input
-              type="text"
-              placeholder="Search sermons..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full md:w-96 px-4 py-2 shadow-sm border-primary/20 rounded-md focus:outline-none outline-none shadow-[#FFC94A]"
-            />
-            <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto">
+        {/* Search / Filters */}
+        <section className="mt-10 rounded-3xl border border-white/10 bg-white/5 p-6">
+          <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="relative w-full md:w-96">
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search by title, preacher, scripture"
+                className="w-full rounded-2xl border border-white/20 bg-black/30 px-4 py-3 text-sm text-white placeholder:text-white/50 focus:border-[#FFC94A] focus:outline-none"
+              />
+              <span className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-white/40">
+                ⌕
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-3">
               {categories.map((category) => (
                 <button
                   key={category}
                   onClick={() => setSelectedCategory(category)}
-                  className={`px-4 py-2 rounded-md whitespace-nowrap shadow-[#FFC94A] shadow-sm ${
+                  className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition ${
                     selectedCategory === category
-                      ? "bg-[#795458] text-whit"
-                      : "text-accent hover:bg-primary/10 border-primary/20"
+                      ? "border-[#FFC94A] bg-[#FFC94A]/20 text-[#FFC94A]"
+                      : "border-white/10 text-white/60 hover:text-white"
                   }`}
                 >
                   {category}
@@ -87,77 +125,91 @@ export default function SermonsPage() {
               ))}
             </div>
           </div>
-        </div>
+        </section>
 
-        {/* Sermon Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Sermon Grid */}
+        <section className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2">
           {filteredSermons.map((sermon, index) => (
-            <motion.div
-              key={sermon._id || index}
-              initial={{ opacity: 0, y: 20 }}
+            <motion.article
+              key={sermon._id || `${sermon.title}-${index}`}
+              initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-              className="bg-whit rounded-lg shadow-sm  border-primary/20 overflow-hidden hover:shadow-md transition-shadow duration-300 shadow-[#FFC94A]"
+              transition={{ delay: index * 0.05 }}
+              className="overflow-hidden rounded-3xl border border-white/10 bg-white/5"
             >
-              <div className="relative h-48">
-                <img
-                  src={sermon.thumbnailUrl}
-                  alt={sermon.title}
-                  onError={(e) => (e.currentTarget.src = "/fallback.png")}
-                  className="w-full h-full object-cover"
+              <div className="relative h-64">
+                <Image
+                  src={sermon.thumbnailUrl || "/sermon.jpg"}
+                  alt={sermon.title || "Sermon thumbnail"}
+                  fill
+                  className="object-cover"
                 />
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center gap-4">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20" />
+                <div className="absolute left-4 top-4 inline-flex items-center rounded-full bg-black/60 px-3 py-1 text-xs uppercase tracking-[0.3em] text-white/70">
+                  {sermon.category || "Gathering"}
+                </div>
+                <div className="absolute inset-0 flex items-center justify-center gap-4">
                   <button
                     onClick={() =>
                       setSelectedSermon({ ...sermon, type: "video" })
                     }
-                    className="p-2 bg-whit rounded-full hover:bg-gray-200"
+                    className="rounded-full border border-white/30 bg-black/40 px-4 py-3 text-xl text-white hover:border-[#FFC94A]"
                   >
-                    ▶️
+                    ▶
                   </button>
-                  <button
-                    onClick={() =>
-                      setSelectedSermon({ ...sermon, type: "audio" })
-                    }
-                    className="p-2 bg-whit rounded-full hover:bg-gray-200"
-                  >
-                    🎧
-                  </button>
+                  {sermon.audioUrl && (
+                    <button
+                      onClick={() =>
+                        setSelectedSermon({ ...sermon, type: "audio" })
+                      }
+                      className="rounded-full border border-white/30 bg-black/40 px-4 py-3 text-xl text-white hover:border-[#FFC94A]"
+                    >
+                      ♪
+                    </button>
+                  )}
                 </div>
               </div>
-              <div className="p-6">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-semibold text-primary">
-                    {format(new Date(sermon.date), "MMM d, yyyy")}
+              <div className="space-y-3 p-6">
+                <div className="flex items-center justify-between text-white/60 text-sm">
+                  <span>
+                    {sermon.date
+                      ? format(new Date(sermon.date), "MMM d, yyyy")
+                      : "Date TBA"}
                   </span>
-                  <span className="text-sm font-medium text-accent">
-                    {sermon.category}
-                  </span>
+                  <span>{sermon.scripture || ""}</span>
                 </div>
-                <h3 className="text-xl font-semibold text-tertiary mb-2">
-                  {sermon.title}
+                <h3 className="text-2xl font-semibold text-white">
+                  {sermon.title || "Untitled Message"}
                 </h3>
-                <p className="text-accent mb-4">{sermon.description}</p>
-                <div className="text-sm text-accent mb-2">
-                  👤 {sermon.preacher}
+                <p className="text-white/70 line-clamp-3">
+                  {sermon.description || "Message summary coming soon."}
+                </p>
+                <div className="flex items-center justify-between text-sm text-white/60">
+                  <span>👤 {sermon.preacher || "Arise Team"}</span>
+                  <span>⏱ {sermon.duration || "45 min"}</span>
                 </div>
-                <div className="text-sm text-accent">📖 {sermon.scripture}</div>
               </div>
-            </motion.div>
+            </motion.article>
           ))}
-        </div>
+          {filteredSermons.length === 0 && (
+            <div className="rounded-3xl border border-dashed border-white/20 p-10 text-center text-white/70">
+              No sermons match that filter yet. Try another keyword.
+            </div>
+          )}
+        </section>
 
-        {/* Load More */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, delay: 0.5 }}
-          className="text-center mt-12"
-        >
-          <button className="inline-flex items-center px-6 py-3 shadow-sm shadow-primary/20 border-primary text-primary rounded-md font-semibold hover:bg-primary hover:text-white shadow-[#FFC94A] hover:shadow-md transition-shadow duration-300">
-            Load More ⬇️
+        {/* Archive CTA */}
+        <section className="mt-12 rounded-3xl border border-white/10 bg-[#2e170b] from-[#120a06] via-[#1c0d07] to-[#2a1007] p-8 text-center">
+          <h3 className="text-2xl font-semibold">Need older teachings?</h3>
+          <p className="mt-3 text-white/70">
+            Our archive spans five years of conferences, bible studies, and
+            marketplace intensives. Drop our media team a note and we will send
+            curated playlists.
+          </p>
+          <button className="mt-6 inline-flex items-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white hover-border-[#FFC94A]">
+            Request archive access
           </button>
-        </motion.div>
+        </section>
       </div>
 
       {/* Modal */}
@@ -167,37 +219,35 @@ export default function SermonsPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
           >
             <motion.div
-              initial={{ scale: 0.9, opacity: 0 }}
+              initial={{ scale: 0.92, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              className="bg-whit rounded-lg w-full max-w-4xl relative"
+              exit={{ scale: 0.92, opacity: 0 }}
+              className="relative w-full max-w-4xl rounded-3xl border border-white/10 bg-[#120a06] p-6"
             >
               <button
                 onClick={() => setSelectedSermon(null)}
-                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                className="absolute right-4 top-4 rounded-full border border-white/20 p-2 text-white/70 hover:text-white"
               >
-                ❌
+                ✕
               </button>
-              <div className="p-4">
-                <h2 className="text-2xl font-bold text-tertiary mb-2">
-                  {selectedSermon.title}
-                </h2>
-
-                <div className="mb-4">
-                  {selectedSermon.type === "video" ? (
-                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-md">
-                      🎥 Video Sermon
-                    </span>
-                  ) : (
-                    <span className="inline-flex items-center gap-2 px-3 py-1 bg-green-100 text-green-800 text-sm font-medium rounded-md">
-                      🎧 Audio Sermon
-                    </span>
-                  )}
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.35em] text-[#FFC94A]">
+                    {selectedSermon.category || "Featured"}
+                  </p>
+                  <h3 className="text-3xl font-semibold text-white">
+                    {selectedSermon.title}
+                  </h3>
+                  <p className="text-white/70">
+                    {selectedSermon.preacher || "Arise Team"}
+                    {selectedSermon.scripture
+                      ? ` · ${selectedSermon.scripture}`
+                      : ""}
+                  </p>
                 </div>
-
                 {selectedSermon.type === "video" ? (
                   <CldVideoPlayer
                     width="100%"
@@ -206,13 +256,13 @@ export default function SermonsPage() {
                     src={selectedSermon.videoUrl}
                     controls
                     autoPlay
-                    className="rounded-lg"
+                    className="rounded-2xl"
                   />
                 ) : (
                   <audio
                     controls
                     autoPlay
-                    className="w-full mt-2 rounded-lg"
+                    className="w-full rounded-2xl"
                     src={selectedSermon.audioUrl}
                   >
                     Your browser does not support the audio element.

@@ -78,7 +78,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen">
       {/* Hero Section */}
-      <section className="relative h-screen">
+      <section className="relative min-h-[90vh] pb-20">
         <div className="absolute inset-0 overflow-hidden">
           {heroImages.map((src, index) => (
             <Image
@@ -95,63 +95,54 @@ export default function HomePage() {
             />
           ))}
         </div>
-        <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/50 to-black/70 text-[#E6B53D]">
-          <div className="flex items-center justify-center h-full px-6">
-            <motion.div
-              className="text-center max-w-4xl"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <div className="flex items-center justify-center mb-6 space-x-1">
-                <p className="uppercase tracking-[0.35em] text-sm text-[#FFC94A]/90 ">
-                  Arise Deborah International
-                </p>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/60 to-black/80" />
+        <div className="relative z-10 flex items-center justify-center px-4 sm:px-6 pt-28 pb-32 md:pt-36 md:pb-40">
+          <motion.div
+            className="text-center max-w-4xl text-[#E6B53D]"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8 }}
+          >
+            <div className="flex flex-col items-center gap-3 mb-6 sm:flex-row sm:justify-center sm:flex-wrap">
+              <p className="uppercase tracking-[0.35em] text-xs sm:text-sm text-[#FFC94A]/90">
+                Arise Deborah International
+              </p>
+              <div className="flex w-full flex-col gap-2 xs:flex-row xs:w-auto sm:flex-row sm:items-center">
                 <Link
                   href="/contact"
-                  className="rounded-md text-white bg-[#937a38] px-2 py-1 text-lg font-semibold text-tertiary border-primary shadow-sm hover:bg-[#a28535] focus-visible:outline-offset-2 focus-visible:outline-primary"
+                  className="rounded-md bg-[#937a38] px-4 py-2 text-sm sm:text-base font-semibold text-white shadow-sm hover:bg-[#a28535] focus-visible:outline-offset-2 focus-visible:outline-primary"
                 >
                   Contact Us
                 </Link>
-                <div className="flex justify-center">
-                  <SignInButton
-                    mode="modal"
-                    className="rounded-md bg-[#3a6b25] px-2 py-1 text-lg font-semibold text-tertiary shadow-sm hover:bg-[#4a7b35] focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-secondary cursor-pointer"
-                  >
-                    Sign In
-                  </SignInButton>
-                </div>
-              </div>
-
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                A House of Prayer, Leadership, and Revival
-              </h1>
-              <p className="text-lg md:text-2xl text-[#FFE9B5] mb-10">
-                Faith-filled gatherings, prophetic prayer rooms, and spirit-led
-                mentorship for women called to influence culture.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                {/* <Link
-                  href="/about"
-                  className="rounded-md bg-primary px-6 py-3 text-lg font-semibold text-tertiary shadow-sm shadow-[#FFC94A] hover:bg-primary-light focus-visible:outline  focus-visible:outline-offset-2 focus-visible:outline-primary hover:shadow-md"
+                <SignInButton
+                  mode="modal"
+                  className="rounded-md bg-[#3a6b25] px-4 py-2 text-sm sm:text-base font-semibold text-white shadow-sm hover:bg-[#4a7b35] focus-visible:outline focus-visible:outline-offset-2 focus-visible:outline-secondary cursor-pointer"
                 >
-                  Learn More
-                </Link> */}
+                  Sign In
+                </SignInButton>
               </div>
-            </motion.div>
-          </div>
+            </div>
+
+            <h1 className="text-3xl sm:text-4xl md:text-6xl font-bold text-white mb-6 leading-tight">
+              A House of Prayer, Leadership, and Revival
+            </h1>
+            <p className="text-base sm:text-lg md:text-2xl text-[#FFE9B5] mb-10">
+              Faith-filled gatherings, prophetic prayer rooms, and spirit-led
+              mentorship for women called to influence culture.
+            </p>
+          </motion.div>
         </div>
-        <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-full max-w-4xl px-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="relative z-20 w-full px-4 sm:px-6 -mt-16 md:-mt-24">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
             {communityStats.map((stat) => (
               <div
                 key={stat.label}
                 className="rounded-2xl border border-white/20 bg-white/5 backdrop-blur-lg py-4 px-6 text-center"
               >
-                <p className="text-sm uppercase tracking-[0.3em] text-[#FFC94A]">
+                <p className="text-xs sm:text-sm uppercase tracking-[0.3em] text-[#FFC94A]">
                   {stat.label}
                 </p>
-                <p className="text-3xl font-bold text-white">{stat.value}</p>
+                <p className="text-2xl sm:text-3xl font-bold text-white">{stat.value}</p>
                 <p className="text-sm text-white/70">{stat.accent}</p>
               </div>
             ))}
@@ -207,7 +198,7 @@ export default function HomePage() {
       <UpcomingEvents />
 
       {/* Ministry Highlights */}
-      <section className="py-20 px-6">
+      <section className="py-20 px-4 sm:px-6">
         <div className="max-w-6xl mx-auto grid gap-10 lg:grid-cols-[1.2fr,0.8fr]">
           <div className="rounded-3xl border border-[#f5d6a3]/70  p-8 shadow-lg">
             <p className="text-xs uppercase tracking-[0.35em] text-secondary">
@@ -236,7 +227,7 @@ export default function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-white/10 bg-black/80 text-white p-8 flex flex-col gap-6 shadow-2xl">
+          <div className="rounded-3xl border border-white/10 bg-[#5f3a19] text-white p-8 flex flex-col gap-6 shadow-2xl">
             <p className="text-sm uppercase tracking-[0.35em] text-[#FFC94A]">
               Prayer Focus
             </p>

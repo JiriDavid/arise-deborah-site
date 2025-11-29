@@ -1,195 +1,235 @@
 "use client";
 
+import Image from "next/image";
+import Link from "next/link";
 import { motion } from "framer-motion";
-import Navigation from "../components/Navigation";
-import { useRouter } from "next/navigation";
+
+const givingStreams = [
+  {
+    title: "Tithes",
+    description: "Returning the first 10% keeps our altars resourced.",
+    image: "/giving.jpg",
+  },
+  {
+    title: "Offerings",
+    description: "Fuel outreaches, trainings, and care packages.",
+    image: "/giving-1.png",
+  },
+  {
+    title: "Projects",
+    description: "Partner with building, media, and relief initiatives.",
+    image: "/giving-2.jpg",
+  },
+];
+
+const impactStats = [
+  { label: "Families Supported", value: "480+" },
+  { label: "Nations Reached", value: "12" },
+  { label: "Live Broadcasts", value: "96" },
+];
+
+const transferDetails = [
+  { label: "Bank", value: "Kingdom Trust" },
+  { label: "Account Name", value: "Arise Deborah Global" },
+  { label: "Account Number", value: "0000 1234 5678" },
+  { label: "Swift / Routing", value: "KDTRUS33" },
+];
+
+const quickGive = [
+  {
+    title: "Give Online",
+    description: "Secure card + bank transfers managed by our giving portal.",
+    cta: "Launch Portal",
+    href: "/give",
+  },
+  {
+    title: "Text to Give",
+    description: "Send ARISE + amount to +1 (202) 555-0110 to receive a link.",
+    cta: "Text Instructions",
+    href: "/contact",
+  },
+];
 
 export default function GivingPage() {
-  const router = useRouter();
-
   return (
-    <div className="min-h-screen">
-      {/* <Navigation /> */}
-      <div className="pt-24 pb-16 px-6">
-        <div className="max-w-7xl mx-auto mt-16">
-          {/* Hero Section with Background Image */}
-          <div className="relative">
-            <div
-              className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: "url(/images/hero-background.jpg)" }}
-            ></div>
-            <div className="absolute inset-0 bg-black opacity-50"></div>
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="relative z-10 text-center py-16"
-            >
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4">
-                Support Our Ministry
-              </h1>
-              <p className="text-lg md:text-xl text-white max-w-2xl mx-auto">
-                Your generous support helps us continue spreading God's love and
-                making a difference in our community.
-              </p>
-            </motion.div>
-          </div>
-
-          {/* Giving Options with Images */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-16 mt-16">
-            {[
-              {
-                title: "Tithe",
-                description:
-                  "Give 10% of your income as an act of worship and obedience.",
-                image: "/giving.jpg",
-              },
-              {
-                title: "Offering",
-                description:
-                  "Support our ministry and community programs through regular offerings.",
-                image: "/giving-1.png",
-              },
-              {
-                title: "Special Projects",
-                description:
-                  "Contribute to specific initiatives and building projects.",
-                image: "/giving-2.jpg",
-              },
-            ].map((option, index) => (
-              <motion.div
-                key={option.title}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className="p-8 rounded-lg shadow-sm shadow-[#FFC94A]  hover:shadow-md transition-shadow duration-300"
+    <div className="min-h-screen bg-[#0f0905] text-white pt-32 pb-20">
+      <div className="mx-auto max-w-6xl px-6">
+        {/* Hero */}
+        <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-[#2b1b0f] via-[#3a1f0c] to-[#4a2108] p-10 text-white">
+          <div className="absolute -left-24 top-10 h-48 w-48 rounded-full bg-[#ffc94a]/20 blur-3xl" />
+          <div className="absolute -right-10 -bottom-10 h-56 w-56 rounded-full bg-white/5 blur-3xl" />
+          <div className="relative space-y-6">
+            <p className="text-xs uppercase tracking-[0.35em] text-[#FFC94A]">
+              Fuel the movement
+            </p>
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+              <div className="max-w-2xl space-y-3">
+                <h1 className="text-4xl font-bold leading-snug">
+                  Every seed becomes discipleship, relief, and revival rooms.
+                </h1>
+                <p className="text-white/80">
+                  Your generosity keeps prayer hubs open, equips marketplace
+                  women, and pushes gospel media into new cities weekly.
+                </p>
+              </div>
+              <Link
+                href="/give"
+                className="inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:border-[#FFC94A] hover:text-[#FFC94A]"
               >
-                <img
-                  src={option.image}
-                  alt={option.title}
-                  className="w-full h-48 object-cover mb-4 rounded-t-lg"
-                />
-                <h3 className="text-xl font-semibold text-tertiary mb-2">
-                  {option.title}
-                </h3>
-                <p className="text-accent mb-4">{option.description}</p>
-                <button
-                  onClick={() => router.push("/give")}
-                  className="w-full bg-primary text-tertiary px-6 py-3 rounded-md font-semibold hover:bg-primary-light transition-colors duration-200 cursor-pointer shadow-sm shadow-[#FFC94A]"
+                Give securely online →
+              </Link>
+            </div>
+            <div className="grid gap-4 md:grid-cols-3">
+              {impactStats.map((stat) => (
+                <div
+                  key={stat.label}
+                  className="rounded-2xl border border-white/15 bg-white/5 px-4 py-4"
                 >
-                  Give Now
-                </button>
-              </motion.div>
-            ))}
+                  <p className="text-3xl font-semibold text-[#FFC94A]">
+                    {stat.value}
+                  </p>
+                  <p className="text-sm uppercase tracking-[0.3em] text-white/70">
+                    {stat.label}
+                  </p>
+                </div>
+              ))}
+            </div>
           </div>
+        </section>
 
-          {/* Giving Information with Icons */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mb-16">
+        {/* Streams */}
+        <section className="mt-12 grid gap-8 md:grid-cols-2">
+          {givingStreams.map((stream, index) => (
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
+              key={stream.title}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
               viewport={{ once: true }}
-              className="p-8 rounded-lg shadow-sm shadow-[#FFC94A] "
+              className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5"
             >
-              <h2 className="text-2xl font-semibold text-tertiary mb-6">
-                Bank Transfer
-              </h2>
-              <div className="space-y-6">
-                <div>
-                  <div className="flex items-center mb-2">
-                    <span className="text-2xl mr-2">🏦</span>
-                    <h3 className="text-lg font-medium text-accent">
-                      Bank Details
-                    </h3>
-                  </div>
-                  <p className="text-accent">Bank Name: Your Bank Name</p>
-                  <p className="text-accent">
-                    Account Name: Arise Deborah Church
-                  </p>
-                  <p className="text-accent">
-                    Account Number: XXXX-XXXX-XXXX-XXXX
-                  </p>
-                  <p className="text-accent">Routing Number: XXXX-XXXX-XX</p>
-                </div>
-                <div>
-                  <div className="flex items-center mb-2">
-                    <span className="text-2xl mr-2">📝</span>
-                    <h3 className="text-lg font-medium text-accent">
-                      Instructions
-                    </h3>
-                  </div>
-                  <p className="text-accent">
-                    1. Log in to your bank's online banking
-                    <br />
-                    2. Add Arise Deborah Church as a new payee
-                    <br />
-                    3. Enter the account details above
-                    <br />
-                    4. Complete the transfer
-                  </p>
-                </div>
+              <div className="relative h-60 w-full">
+                <Image
+                  src={stream.image}
+                  alt={stream.title}
+                  fill
+                  className="object-cover transition duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20" />
+              </div>
+              <div className="space-y-3 p-6">
+                <p className="text-xs uppercase tracking-[0.35em] text-white/70">
+                  {index === 2 ? "Capital" : "Partnership"}
+                </p>
+                <h3 className="text-2xl font-semibold">{stream.title}</h3>
+                <p className="text-white/80">{stream.description}</p>
               </div>
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-              viewport={{ once: true }}
-              className="p-8 rounded-lg shadow-sm shadow-[#FFC94A] "
-            >
-              <h2 className="text-2xl font-semibold text-tertiary mb-6">
-                In-Person Giving
-              </h2>
-              <div className="space-y-6">
-                <div>
-                  <div className="flex items-center mb-2">
-                    <span className="text-2xl mr-2">⏰</span>
-                    <h3 className="text-lg font-medium text-accent">
-                      Service Times
-                    </h3>
-                  </div>
-                  <p className="text-accent">Sunday: 10:00 AM</p>
-                  <p className="text-accent">Wednesday: 7:00 PM</p>
-                </div>
-                <div>
-                  <div className="flex items-center mb-2">
-                    <span className="text-2xl mr-2">📍</span>
-                    <h3 className="text-lg font-medium text-accent">
-                      Location
-                    </h3>
-                  </div>
-                  <p className="text-accent">123 Church Street</p>
-                  <p className="text-accent">City, State 12345</p>
-                </div>
-                <div>
-                  <div className="flex items-center mb-2">
-                    <span className="text-2xl mr-2">📞</span>
-                    <h3 className="text-lg font-medium text-accent">Contact</h3>
-                  </div>
-                  <p className="text-accent">Phone: (123) 456-7890</p>
-                  <p className="text-accent">Email: giving@arisedeborah.org</p>
-                </div>
-              </div>
-            </motion.div>
-          </div>
-
-          {/* Tax Information */}
+          ))}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+            viewport={{ once: true }}
+            className="rounded-3xl border border-dashed border-[#FFC94A]/40 bg-[#1a120a] p-8"
+          >
+            <p className="text-xs uppercase tracking-[0.35em] text-white/60">
+              recurring generosity
+            </p>
+            <h3 className="mt-3 text-3xl font-semibold text-white">
+              Set up monthly automation
+            </h3>
+            <p className="mt-3 text-white/70">
+              Scheduling transfers helps us forecast outreaches, pastoral care,
+              and scholar stipends with confidence.
+            </p>
+            <Link
+              href="/give"
+              className="mt-6 inline-flex items-center rounded-full bg-[#FFC94A] px-5 py-2 text-sm font-semibold text-black"
+            >
+              Start a recurring gift
+            </Link>
+          </motion.div>
+        </section>
+
+        {/* Giving Tools */}
+        <section className="mt-12 grid gap-8 lg:grid-cols-[1.2fr_1fr]">
+          <motion.div
+            initial={{ opacity: 0, x: -20 }}
+            whileInView={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5 }}
             viewport={{ once: true }}
-            className="text-center p-6 bg-primary/5 rounded-lg"
+            className="rounded-3xl border border-white/10 bg-white/5 p-8"
           >
-            <p className="text-accent">
-              All donations are tax-deductible. We will provide you with a
-              receipt for your records.
+            <p className="text-xs uppercase tracking-[0.35em] text-white/60">
+              bank transfer
             </p>
+            <h3 className="mt-3 text-3xl font-semibold">Direct deposits</h3>
+            <p className="mt-3 text-white/70">
+              Send via your banking portal or branch with the verified details
+              below. Add a memo so our team can tag the right fund.
+            </p>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2">
+              {transferDetails.map((detail) => (
+                <div
+                  key={detail.label}
+                  className="rounded-2xl border border-white/10 p-4"
+                >
+                  <p className="text-xs uppercase tracking-[0.3em] text-white/50">
+                    {detail.label}
+                  </p>
+                  <p className="text-lg font-semibold text-white">
+                    {detail.value}
+                  </p>
+                </div>
+              ))}
+            </div>
           </motion.div>
-        </div>
+          <motion.div
+            initial={{ opacity: 0, x: 20 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.5 }}
+            viewport={{ once: true }}
+            className="space-y-4"
+          >
+            {quickGive.map((method) => (
+              <div
+                key={method.title}
+                className="rounded-3xl border border-white/10 bg-[#18100a] p-6"
+              >
+                <p className="text-xs uppercase tracking-[0.3em] text-[#FFC94A]">
+                  Quick option
+                </p>
+                <h4 className="mt-2 text-2xl font-semibold">{method.title}</h4>
+                <p className="mt-2 text-white/70">{method.description}</p>
+                <Link
+                  href={method.href}
+                  className="mt-4 inline-flex items-center text-sm font-semibold text-[#FFC94A]"
+                >
+                  {method.cta} →
+                </Link>
+              </div>
+            ))}
+          </motion.div>
+        </section>
+
+        {/* Assurance */}
+        <section className="mt-12 rounded-3xl border border-white/10 bg-gradient-to-r from-[#150c07] via-[#201209] to-[#2a1409] p-8 text-center">
+          <h3 className="text-2xl font-semibold text-white">
+            We issue annual statements and thank-you letters for every gift.
+          </h3>
+          <p className="mt-3 text-white/70">
+            Registered as a 501(c)(3) nonprofit. Need custom documentation for a
+            foundation or company gift? Drop us a note and our finance team will
+            respond within two business days.
+          </p>
+          <Link
+            href="/contact"
+            className="mt-6 inline-flex items-center justify-center rounded-full border border-white/20 px-6 py-3 text-sm font-semibold text-white hover:border-[#FFC94A]"
+          >
+            Email finance team
+          </Link>
+        </section>
       </div>
     </div>
   );

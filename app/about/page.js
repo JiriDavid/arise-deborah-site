@@ -1,190 +1,252 @@
 "use client";
 
-import Navigation from "../components/Navigation";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
-const staff = [
+const beliefPillars = [
   {
-    name: "Pastor John Doe",
-    role: "Senior Pastor",
+    title: "Prophetic Prayer",
+    description:
+      "We cultivate atmospheres where women hear God clearly and intercede with authority.",
+  },
+  {
+    title: "Mentorship & Advocacy",
+    description:
+      "Every leader deserves covering. We pair women with seasoned mentors who walk alongside them.",
+  },
+  {
+    title: "Kingdom Influence",
+    description:
+      "From the boardroom to the mission field, we equip women to steward their call and impact culture.",
+  },
+];
+
+const timeline = [
+  {
+    year: "2014",
+    title: "Birth of the Prayer Call",
+    detail:
+      "Pastor Deborah gathered a handful of women at 5AM daily. What began as intercession became a global movement.",
+  },
+  {
+    year: "2018",
+    title: "Mentorship Tracks",
+    detail:
+      "The first mentorship cohorts launched, pairing new voices with mothers in the faith to accelerate growth.",
+  },
+  {
+    year: "2022",
+    title: "Hybrid Prayer Rooms",
+    detail:
+      "LiveKit-enabled rooms opened, allowing women across nations to enter immersive prayer encounters online.",
+  },
+  {
+    year: "2024",
+    title: "Kingdom Labs",
+    detail:
+      "Strategic summits and city labs began, sparking entrepreneurship, missions, and policy conversations led by women.",
+  },
+];
+
+const leadership = [
+  {
+    name: "Pastor Deborah A.",
+    role: "Visionary & Lead Pastor",
     image: "/praise-1.jpg",
+    quote:
+      "We are raising a remnant of women who prophesy, build, and nurture cultures of heaven wherever they stand.",
   },
   {
-    name: "Sarah Smith",
-    role: "Worship Leader",
-    image:
-      "https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=80",
-    bio: "Guiding our worship ministry with passion and dedication.",
+    name: "Sarah Olu",
+    role: "Executive Director",
+    image: "/praise.jpg",
+    quote:
+      "My passion is to ensure every vision carrier receives the systems, teams, and prayers they need to flourish.",
   },
   {
-    name: "Michael Johnson",
-    role: "Youth Pastor",
-    image:
-      "https://images.unsplash.com/photo-1573497161529-95eb65b7a2fb?auto=format&fit=crop&w=800&q=80",
-    bio: "Inspiring the next generation in their faith journey.",
+    name: "Dr. Tola A.",
+    role: "Global Programs Lead",
+    image: "/praise-3.jpeg",
+    quote:
+      "From mentorship circles to kingdom labs, we design experiences that stretch capacity and release solutions.",
   },
 ];
 
 export default function AboutPage() {
   return (
-    <>
-      <div className="min-h-screen bg-secondary pt-12">
-        {/* Hero Section */}
-        <div className="relative isolate">
-          <div className="absolute inset-x-0 -top-40 -z-10 transform-gpu overflow-hidden blur-3xl sm:-top-80">
-            <div
-              className="relative left-[calc(50%-11rem)] aspect-[1155/678] w-[36.125rem] -translate-x-1/2 rotate-[30deg] bg-gradient-to-tr from-primary to-accent opacity-20 sm:left-[calc(50%-30rem)] sm:w-[72.1875rem]"
-              style={{
-                clipPath:
-                  "polygon(74.1% 44.1%, 100% 61.6%, 97.5% 26.9%, 85.5% 0.1%, 80.7% 2%, 72.5% 32.5%, 60.2% 62.4%, 52.4% 68.1%, 47.5% 58.3%, 45.2% 34.5%, 27.5% 76.7%, 0.1% 64.9%, 17.9% 100%, 27.6% 76.8%, 76.1% 97.7%, 74.1% 44.1%)",
-              }}
-            />
-          </div>
-          <div className="mx-auto max-w-7xl px-6 py-10 sm:py-32 lg:px-8">
+    <div className="bg-secondary text-white">
+      {/* Hero */}
+      <section className="relative overflow-hidden pt-24 pb-16 sm:pt-28 sm:pb-20 min-h-[70vh]">
+        <div className="absolute inset-0 opacity-30">
+          <Image
+            src="/praise.jpg"
+            alt="Prayer gathering"
+            fill
+            sizes="100vw"
+            className="object-cover"
+          />
+        </div>
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
+        <div className="relative mx-auto max-w-6xl px-4 sm:px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6 }}
+            className="rounded-3xl border border-white/10 bg-black/70 p-8 sm:p-10 backdrop-blur-xl"
+          >
+            <p className="text-xs uppercase tracking-[0.4em] text-[#FFC94A]">
+              About Arise Deborah
+            </p>
+            <h1 className="mt-4 text-3xl font-bold leading-tight sm:text-5xl">
+              Building altars of prayer and leadership for women across the
+              globe
+            </h1>
+            <p className="mt-6 text-base text-white/80 sm:text-lg">
+              We are a global family committed to intercession, mentorship, and
+              kingdom solutions. At dawn, at noon, and under the night watch,
+              women gather in our rooms to host God and release His heart to
+              nations.
+            </p>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Pillars */}
+      <section className="py-16 px-4 sm:px-6">
+        <div className="mx-auto max-w-5xl text-center">
+          <p className="text-sm uppercase tracking-[0.35em] text-[#FFC94A]">
+            Our heartbeat
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold text-white">
+            Three pillars that guide everything we build
+          </h2>
+        </div>
+        <div className="mt-10 grid gap-6 md:grid-cols-3">
+          {beliefPillars.map((pillar) => (
             <motion.div
-              className="mx-auto max-w-2xl text-center"
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
+              key={pillar.title}
+              whileHover={{ y: -8 }}
+              className="rounded-3xl border border-[#f7d9a6]/40 bg-[#2b1b0f]/80 p-6 shadow-xl"
             >
-              <h1 className="text-4xl font-bold tracking-tight text-primary sm:text-6xl">
-                About Arise Deborah International
-              </h1>
-              <p className="mt-6 text-lg leading-8 text-white">
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Quisquam, quos. Lorem Lorem ipsum dolor sit amet consectetur
-                adipisicing elit. Quisquam, quos. Lorem
-              </p>
+              <h3 className="text-xl font-semibold text-[#FFE5B4]">
+                {pillar.title}
+              </h3>
+              <p className="mt-3 text-sm text-white/80">{pillar.description}</p>
             </motion.div>
-          </div>
+          ))}
         </div>
+      </section>
 
-        {/* Mission & Vision */}
-        <div className="bg-secondary-light grid grid-cols-2 gap-4 items-center justify-between mx-4 ">
-          <div className="mx-auto max-w-7xl px-6 lg:px-8 shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg col-span-2 md:col-span-1">
-            <div className="mx-auto max-w-2xl lg:text-center">
-              <h2 className="text-base font-semibold leading-7 text-primary">
-                Our Mission
-              </h2>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                To spread God's love and make disciples
-              </p>
-              <p className="mt-6 text-lg leading-8 text-white">
-                We are committed to creating a welcoming environment where
-                everyone can experience God's love and grow in their faith
-                journey.
-              </p>
-            </div>
+      {/* Story Timeline */}
+      <section className="py-20 px-4 sm:px-6 bg-[#120a05]/70">
+        <div className="mx-auto max-w-6xl">
+          <div className="text-center">
+            <p className="text-sm uppercase tracking-[0.4em] text-[#FFC94A]">
+              Our story
+            </p>
+            <h2 className="mt-3 text-3xl font-semibold">
+              Moments that shaped our movement
+            </h2>
           </div>
-
-          {/* Core Beliefs */}
-          <div className="mx-auto max-w-7xl px-6   col-span-2 md:col-span-1 shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg">
-            <div className="mx-auto max-w-2xl lg:text-center">
-              <h2 className="text-base font-semibold leading-7 text-primary">
-                Core Beliefs
-              </h2>
-              <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-                What We Believe In to Push Us Forward
-              </p>
-              <p className="mt-6 text-lg leading-8 text-white">
-                Our faith is grounded in the fundamental truths of Christianity.
-                Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                Quisquam, quos. Lorem ipsum dolor sit
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="mx-4 mt-16 max-w-2xl sm:mt-20 lg:mt-24 lg:max-w-none ">
-          <dl className="grid max-w-xl grid-cols-1 gap-x-8 gap-y-16 lg:max-w-none lg:grid-cols-3">
-            {[
-              {
-                title: "The Bible",
-                description:
-                  "We believe the Bible is the inspired and infallible Word of God.",
-              },
-              {
-                title: "Salvation",
-                description:
-                  "Salvation comes through faith in Jesus Christ alone.",
-              },
-              {
-                title: "The Church",
-                description:
-                  "The church is the body of Christ, called to make disciples.",
-              },
-            ].map((belief) => (
+          <div className="mt-12 grid gap-6">
+            {timeline.map((item, index) => (
               <motion.div
-                key={belief.title}
-                className="flex flex-col shadow-sm shadow-primary/20 shadow-[#FFC94A] p-4 rounded-lg"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
+                key={item.year}
+                initial={{ opacity: 0, x: index % 2 === 0 ? -30 : 30 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                viewport={{ once: true, amount: 0.3 }}
+                transition={{ duration: 0.5 }}
+                className="rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-md"
               >
-                <dt className="flex items-center gap-x-3 text-base font-semibold leading-7 text-primary">
-                  {belief.title}
-                </dt>
-                <dd className="mt-4 flex flex-auto flex-col text-base leading-7 text-white">
-                  <p className="flex-auto">{belief.description}</p>
-                </dd>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-[#FFC94A]">
+                      {item.year}
+                    </p>
+                    <h3 className="mt-2 text-2xl font-semibold text-white">
+                      {item.title}
+                    </h3>
+                  </div>
+                </div>
+                <p className="mt-4 text-white/80">{item.detail}</p>
               </motion.div>
             ))}
-          </dl>
+          </div>
         </div>
+      </section>
 
-        {/* Staff Section */}
-        <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
-          <div className="mx-auto max-w-2xl lg:text-center">
-            <h2 className="text-base font-semibold leading-7 text-primary">
-              Our Leadership
-            </h2>
-            <p className="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
-              Meet Our Team
-            </p>
-            <p className="mt-6 text-lg leading-8 text-white">
-              Our dedicated team of leaders is committed to serving our
-              community.
-            </p>
-          </div>
-          <div className="mx-auto mt-16 grid max-w-2xl grid-cols-1 gap-x-8 gap-y-20 lg:mx-0 lg:max-w-none lg:grid-cols-3">
-            {staff.map((person) => (
-              <motion.article
-                key={person.name}
-                className="flex flex-col items-start"
-                whileHover={{ scale: 1.05 }}
-                transition={{ duration: 0.2 }}
-              >
-                <div className="relative w-full">
-                  <div className="aspect-[3/4] w-full overflow-hidden rounded-2xl bg-secondary-light">
-                    <Image
-                      src={person.image}
-                      alt={person.name}
-                      width={400}
-                      height={500}
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                      className="h-full w-full object-cover"
-                      quality={85}
-                    />
-                  </div>
-                </div>
-                <div className="max-w-xl">
-                  <div className="mt-6 flex items-center gap-x-6">
-                    <h3 className="text-lg font-semibold leading-8 text-primary">
-                      {person.name}
-                    </h3>
-                    <p className="text-sm font-semibold leading-6 text-white">
-                      {person.role}
-                    </p>
-                  </div>
-                  <p className="mt-4 text-base leading-7 text-white">
-                    {person.bio}
-                  </p>
-                </div>
-              </motion.article>
-            ))}
+      {/* Leadership */}
+      <section className="py-24 px-4 sm:px-6">
+        <div className="mx-auto max-w-5xl text-center">
+          <p className="text-sm uppercase tracking-[0.35em] text-[#FFC94A]">
+            Leadership circle
+          </p>
+          <h2 className="mt-2 text-3xl font-semibold">
+            Guided by mothers and builders
+          </h2>
+          <p className="mt-4 text-white/70">
+            Our team brings decades of ministry, governance, therapy, and
+            creative leadership to serve women in every sphere.
+          </p>
+        </div>
+        <div className="mt-16 grid gap-8 md:grid-cols-3">
+          {leadership.map((leader) => (
+            <motion.div
+              key={leader.name}
+              whileHover={{ y: -6 }}
+              className="rounded-3xl border border-white/10 bg-black/40 p-6 text-center shadow-2xl"
+            >
+              <div className="mx-auto h-32 w-32 overflow-hidden rounded-full border border-[#FFC94A]/30">
+                <Image
+                  src={leader.image}
+                  alt={leader.name}
+                  width={160}
+                  height={160}
+                  className="h-full w-full object-cover"
+                />
+              </div>
+              <h3 className="mt-6 text-xl font-semibold text-[#FFE5B4]">
+                {leader.name}
+              </h3>
+              <p className="text-sm uppercase tracking-[0.3em] text-[#FFC94A]">
+                {leader.role}
+              </p>
+              <p className="mt-4 text-sm text-white/80">{leader.quote}</p>
+            </motion.div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="pb-24 px-4 sm:px-6">
+        <div className="mx-auto max-w-5xl rounded-3xl border border-[#FFC94A]/40 bg-gradient-to-r from-[#2b1b0f] to-[#3a1f0c] p-8 sm:p-10 text-center shadow-2xl">
+          <p className="text-xs uppercase tracking-[0.35em] text-[#FFC94A]">
+            Walk with us
+          </p>
+          <h2 className="mt-4 text-3xl font-semibold text-white">
+            Ready to join the prayer rooms, mentorship circles, or upcoming
+            labs?
+          </h2>
+          <p className="mt-4 text-white/70">
+            Whether you want to volunteer, serve as a mentor, or bring Arise
+            Deborah to your city, we would love to meet you.
+          </p>
+          <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
+            <a
+              href="/prayer-rooms"
+              className="rounded-2xl bg-[#FFC94A] px-6 py-3 font-semibold text-[#2B1B0F]"
+            >
+              Explore Prayer Rooms
+            </a>
+            <a
+              href="/contact"
+              className="rounded-2xl border border-white/30 px-6 py-3 font-semibold text-white"
+            >
+              Contact Our Team
+            </a>
           </div>
         </div>
-      </div>
-    </>
+      </section>
+    </div>
   );
 }

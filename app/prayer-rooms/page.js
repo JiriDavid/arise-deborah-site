@@ -134,133 +134,188 @@ export default function PrayerRoomsPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="text-center">Loading prayer rooms...</div>
+      <div className="min-h-screen  text-white flex items-center justify-center">
+        <div className="text-center space-y-3">
+          <div className="mx-auto h-12 w-12 animate-spin rounded-full border-2 border-white/30 border-t-[#FFC94A]" />
+          <p className="text-sm uppercase tracking-[0.35em] text-white/60">
+            Loading prayer rooms
+          </p>
+        </div>
       </div>
     );
   }
 
+  const joinableRooms = prayerRooms.filter(
+    (room) => getRoomStatus(room).canJoin
+  ).length;
+  const dailyRooms = prayerRooms.filter((room) => room.isRecurringDaily).length;
+  const totalParticipants = prayerRooms.reduce(
+    (sum, room) => sum + (room.participants?.length || 0),
+    0
+  );
+
+  const summary = [
+    {
+      label: "Active windows",
+      value: joinableRooms.toString().padStart(2, "0"),
+    },
+    { label: "Daily towers", value: dailyRooms.toString().padStart(2, "0") },
+    { label: "Intercessors", value: `${totalParticipants}+` },
+  ];
+
   return (
-    <div className="container mx-auto px-4 py-8 pt-24">
-      <div className="flex justify-between items-center mb-8">
-        <div>
-          <h1 className="text-3xl font-bold text-tertiary mb-2">
-            Live Group Prayers
-          </h1>
-          <p className="text-accent">
-            Join our community in prayer and worship
+    <div className="min-h-screen text-white pt-32 pb-20">
+      <div className="mx-auto max-w-6xl px-6">
+        <section className="rounded-3xl border border-white/10 bg-gradient-to-r from-[#2b1208] via-[#3d1508] to-[#4f1907] p-10">
+          <p className="text-xs uppercase tracking-[0.35em] text-[#FFC94A]">
+            Live prayer rooms
           </p>
-        </div>
-        {isAdmin && (
-          <Link
-            href="/admin/prayer-rooms"
-            className="flex items-center gap-2 bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors"
-          >
-            <FiPlus size={20} />
-            Create Room
-          </Link>
-        )}
-      </div>
-
-      {prayerRooms.length === 0 ? (
-        <div className="text-center py-12">
-          <FiVideo size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-xl font-semibold text-tertiary mb-2">
-            No Prayer Rooms Available
-          </h3>
-          <p className="text-accent">
-            Check back later for upcoming prayer sessions.
-          </p>
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {prayerRooms.map((room, index) => {
-            const roomStatus = getRoomStatus(room);
-            const dateDisplay = room.isRecurringDaily
-              ? "Available Daily"
-              : room.date
-              ? format(new Date(room.date), "PPP")
-              : "Date TBD";
-            const timeDisplay = `${room.scheduledStartTime || "--:--"} - ${
-              room.scheduledEndTime || "--:--"
-            }`;
-            return (
-              <motion.div
-                key={room._id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                className=" border rounded-xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300"
+          <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+            <div className="space-y-3">
+              <h1 className="text-4xl font-semibold leading-tight">
+                Step into watch rooms igniting intercession across nations.
+              </h1>
+              <p className="text-white/75">
+                Join a scheduled room, stay for daily altars, or host the next
+                vigil if you are part of the admin core.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row">
+              <Link
+                href="#rooms"
+                className="inline-flex items-center justify-center rounded-full border border-white/30 px-6 py-3 text-sm font-semibold text-white hover:border-[#FFC94A] hover:text-[#FFC94A]"
               >
-                <div className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div
-                      className={`px-3 py-1 rounded-full text-white text-sm font-semibold ${roomStatus.color}`}
-                    >
-                      {roomStatus.text}
+                Browse sessions →
+              </Link>
+              {isAdmin && (
+                <Link
+                  href="/admin/prayer-rooms"
+                  className="inline-flex items-center justify-center gap-2 rounded-full bg-[#FFC94A] px-6 py-3 text-sm font-semibold text-black"
+                >
+                  <FiPlus />
+                  Create room
+                </Link>
+              )}
+            </div>
+          </div>
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            {summary.map((item) => (
+              <div
+                key={item.label}
+                className="rounded-2xl border border-white/10 bg-black/20 px-4 py-4"
+              >
+                <p className="text-3xl font-semibold text-[#FFC94A]">
+                  {item.value}
+                </p>
+                <p className="text-xs uppercase tracking-[0.3em] text-white/70">
+                  {item.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="rooms" className="mt-12">
+          {prayerRooms.length === 0 ? (
+            <div className="rounded-3xl border border-dashed border-white/15 bg-white/5 p-12 text-center">
+              <FiVideo size={48} className="mx-auto text-white/40 mb-4" />
+              <h3 className="text-2xl font-semibold text-white">
+                No rooms available
+              </h3>
+              <p className="mt-2 text-white/70">
+                Check back for fresh schedules or subscribe so you get notified
+                when a new session opens.
+              </p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
+              {prayerRooms.map((room, index) => {
+                const roomStatus = getRoomStatus(room);
+                const dateDisplay = room.isRecurringDaily
+                  ? "Daily window"
+                  : room.date
+                  ? format(new Date(room.date), "PPP")
+                  : "Date TBA";
+                const timeDisplay = `${room.scheduledStartTime || "--:--"} • ${
+                  room.scheduledEndTime || "--:--"
+                }`;
+
+                return (
+                  <motion.article
+                    key={room._id}
+                    initial={{ opacity: 0, y: 24 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: index * 0.08 }}
+                    className="rounded-3xl border border-white/10 bg-white/5 p-6"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span
+                        className={`rounded-full px-4 py-1 text-xs font-semibold uppercase tracking-[0.35em] text-white ${roomStatus.color}`}
+                      >
+                        {roomStatus.text}
+                      </span>
+                      {room.isActive && (
+                        <div className="flex items-center gap-2 text-red-400 text-xs font-semibold">
+                          <span className="h-2 w-2 animate-pulse rounded-full bg-red-400" />
+                          Broadcasting
+                        </div>
+                      )}
                     </div>
-                    {room.isActive && (
-                      <div className="flex items-center text-red-500">
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse mr-2"></div>
-                        LIVE
+                    <div className="mt-5 space-y-3">
+                      <h3 className="text-2xl font-semibold text-white">
+                        {room.title}
+                      </h3>
+                      {room.isRecurringDaily && (
+                        <span className="inline-flex items-center rounded-full border border-white/20 px-3 py-1 text-xs text-white/70">
+                          Daily altar
+                        </span>
+                      )}
+                      <p className="text-white/70 line-clamp-3">
+                        {room.description}
+                      </p>
+                    </div>
+                    <div className="mt-6 space-y-2 text-sm text-white/70">
+                      <div className="flex items-center gap-2">
+                        <FiCalendar className="text-[#FFC94A]" /> {dateDisplay}
                       </div>
-                    )}
-                  </div>
-
-                  <h3 className="text-xl font-semibold text-tertiary mb-2">
-                    {room.title}
-                  </h3>
-                  {room.isRecurringDaily && (
-                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-purple-100 text-purple-600 mb-2">
-                      Daily Window
-                    </span>
-                  )}
-                  <p className="text-accent mb-4 line-clamp-2">
-                    {room.description}
-                  </p>
-
-                  <div className="space-y-2 mb-4">
-                    <div className="flex items-center text-sm text-accent">
-                      <FiCalendar className="w-4 h-4 mr-2" />
-                      {dateDisplay}
+                      <div className="flex items-center gap-2">
+                        <FiClock className="text-[#FFC94A]" />
+                        {room.isRecurringDaily
+                          ? `Daily • ${timeDisplay}`
+                          : timeDisplay}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <FiUsers className="text-[#FFC94A]" />
+                        {room.participants?.length || 0} intercessors
+                      </div>
                     </div>
-                    <div className="flex items-center text-sm text-accent">
-                      <FiClock className="w-4 h-4 mr-2" />
-                      {room.isRecurringDaily
-                        ? `Daily • ${timeDisplay}`
-                        : timeDisplay}
+                    <div className="mt-6">
+                      {roomStatus.canJoin ? (
+                        <Link
+                          href={`/prayer-rooms/${room._id}`}
+                          className="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-[#1f6f4a] px-5 py-3 text-sm font-semibold text-white transition hover:bg-[#2a825a]"
+                        >
+                          <FiVideo /> Join prayer session
+                        </Link>
+                      ) : (
+                        <div className="rounded-2xl border border-white/10 bg-black/30 px-5 py-3 text-center text-white/60">
+                          {roomStatus.status === "scheduled"
+                            ? `Starts at ${room.scheduledStartTime}`
+                            : roomStatus.status === "daily"
+                            ? `Reopens daily at ${room.scheduledStartTime}`
+                            : roomStatus.status === "ended"
+                            ? "Session ended"
+                            : "Awaiting activation"}
+                        </div>
+                      )}
                     </div>
-                    <div className="flex items-center text-sm text-accent">
-                      <FiUsers className="w-4 h-4 mr-2" />
-                      {room.participants?.length || 0} participants
-                    </div>
-                  </div>
-
-                  {roomStatus.canJoin ? (
-                    <Link
-                      href={`/prayer-rooms/${room._id}`}
-                      className="w-full bg-green-700 text-white py-3 px-4 rounded-lg hover:bg-green-800 transition-colors flex items-center justify-center gap-2"
-                    >
-                      <FiVideo size={20} />
-                      Join Prayer Session
-                    </Link>
-                  ) : (
-                    <div className="w-full bg-gray-200 text-gray-600 py-3 px-4 rounded-lg text-center">
-                      {roomStatus.status === "scheduled"
-                        ? `Starts at ${room.scheduledStartTime}`
-                        : roomStatus.status === "daily"
-                        ? `Reopens daily at ${room.scheduledStartTime}`
-                        : roomStatus.status === "ended"
-                        ? "Session Ended"
-                        : "Not currently available"}
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            );
-          })}
-        </div>
-      )}
+                  </motion.article>
+                );
+              })}
+            </div>
+          )}
+        </section>
+      </div>
     </div>
   );
 }

@@ -168,7 +168,7 @@ export default function PrayerRoomPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050203]">
+      <div className="min-h-screen flex items-center justify-center">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFC94A] mx-auto mb-4"></div>
           <p>Preparing your prayer room...</p>
@@ -179,7 +179,7 @@ export default function PrayerRoomPage() {
 
   if (error && !token) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#050203] px-4">
+      <div className="min-h-screen flex items-center justify-center px-4">
         <div className="text-center bg-white/5 backdrop-blur-xl border border-[#FFC94A]/30 rounded-2xl p-10 max-w-lg w-full text-white">
           <h1 className="text-3xl font-bold text-[#FFC94A] mb-4">
             We hit a snag
@@ -206,8 +206,8 @@ export default function PrayerRoomPage() {
 
   if (!token) {
     return (
-      <div className="relative min-h-screen bg-[#060406] text-white overflow-hidden">
-        <div className="absolute inset-0 opacity-50 bg-gradient-to-b from-[#160a05] via-transparent to-[#050203]" />
+      <div className="relative min-h-screen  text-white overflow-hidden">bg-[#060406]
+        <div className="absolute inset-0 opacity-50 from-[#160a05] via-transparent to-[#050203]" />
         <div className="absolute -top-1/3 -right-1/4 w-[600px] h-[600px] bg-[#FFC94A]/10 blur-3xl rounded-full" />
         <div className="absolute -bottom-1/3 -left-1/4 w-[500px] h-[500px] bg-[#C08B5C]/10 blur-3xl rounded-full" />
 
@@ -266,7 +266,7 @@ export default function PrayerRoomPage() {
               </div>
 
               <div className="grid sm:grid-cols-2 gap-4">
-                <div className="p-4 rounded-2xl bg-black/30 border border-white/5">
+                <div className="p-4 rounded-2xl  border border-white/5">
                   <p className="text-sm text-white/60">Focus</p>
                   <p className="text-lg font-semibold capitalize">
                     {room?.tags?.[0] || "Community"}
@@ -334,7 +334,7 @@ export default function PrayerRoomPage() {
         </div>
 
         {showSignInModal && (
-          <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="fixed inset-0  flex items-center justify-center z-50 px-4">
             <div className="bg-white rounded-3xl shadow-2xl p-8 max-w-sm w-full">
               <div className="text-center">
                 <h3 className="text-xl font-semibold text-gray-900 mb-3">
@@ -377,7 +377,7 @@ export default function PrayerRoomPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#040207] text-white">
+    <div className="min-h-screen text-white">
       <div className="max-w-6xl mx-auto px-4 py-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-white/60">
@@ -401,11 +401,26 @@ export default function PrayerRoomPage() {
           >
             Return Home
           </button>
+          <button
+            onClick={handleLeaveRoom}
+            className="px-4 py-2 rounded-full bg-red-600 text-white font-semibold shadow-lg shadow-red-900/40 hover:bg-red-500 transition"
+          >
+            Leave Session
+          </button>
         </div>
       </div>
 
       <div className="px-4 pb-6 h-[calc(100vh-150px)]">
-        <div className="h-full rounded-3xl border border-white/10 bg-black/30 backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/40">
+        <div className="relative h-full rounded-3xl border border-white/10  backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/40">
+          <div className="pointer-events-none absolute left-6 top-6 z-10 hidden max-w-lg flex-col gap-1 rounded-2xl bg-black/40 px-4 py-3 md:flex">
+            {/* <span className="text-xs uppercase tracking-[0.35em] text-white/70">
+              Now streaming
+            </span>
+            <p className="text-lg font-semibold">{room?.title}</p>
+            <p className="text-sm text-white/70 line-clamp-2">
+              {room?.description}
+            </p> */}
+          </div>
           <LiveKitRoom
             token={token}
             serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
@@ -429,41 +444,17 @@ export default function PrayerRoomPage() {
             className="h-full w-full"
           >
             <div className="h-full flex flex-col">
-              <div className="bg-black/60 border-b border-white/10 px-6 py-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <p className="text-sm text-white/60">Now streaming</p>
-                  <h1 className="text-2xl font-semibold">{room?.title}</h1>
-                  <p className="text-white/60 text-sm max-w-2xl">
-                    {room?.description}
-                  </p>
-                </div>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => exitRoom("/")}
-                    className="px-4 py-2 rounded-xl border border-white/20 text-sm text-white/80 hover:text-white"
-                  >
-                    Return Home
-                  </button>
-                  <button
-                    onClick={handleLeaveRoom}
-                    className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 font-semibold"
-                  >
-                    Leave Session
-                  </button>
-                </div>
-              </div>
-
               <div className="flex-1 flex flex-col lg:flex-row">
-                <div className="flex-1 bg-black/40">
+                <div className="flex-1">
                   <VideoConferenceComponent />
                 </div>
-                <div className="w-full lg:w-80 bg-black/60 border-t lg:border-t-0 lg:border-l border-white/10">
+                <div className="w-full lg:w-80  border-t lg:border-t-0 lg:border-l border-white/10">
                   <Chat />
                 </div>
               </div>
 
-              <div className="bg-black/60 border-t border-white/10 px-6 py-4">
-                <ControlBar />
+              <div className=" border-t border-white/10 px-6 py-4">
+                {/* <ControlBar /> */}
               </div>
             </div>
 
