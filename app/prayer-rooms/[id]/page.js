@@ -455,14 +455,10 @@ export default function PrayerRoomPage() {
                   <Chat />
                 </div>
               </div>
-
-              <div className="hidden lg:block border-t border-white/10 px-6 py-4">
-                <ControlBar />
-              </div>
             </div>
 
-            {/* Mobile controls overlay */}
-            <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm border-t border-white/10 px-4 py-3 z-50">
+            {/* Fixed ControlBar for all devices */}
+            <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm border-t border-white/10 px-4 py-3 z-50">
               <ControlBar />
             </div>
 
