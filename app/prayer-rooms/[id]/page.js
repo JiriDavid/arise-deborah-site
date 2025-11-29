@@ -173,8 +173,8 @@ export default function PrayerRoomPage() {
   const messageFormatter = (message) => (
     <div className="flex justify-start mb-2">
       <div className="bg-white/10 text-white px-4 py-2 rounded-2xl max-w-xs">
-        <div className="text-sm font-semibold mb-1">{message.from?.name || 'Anonymous'}</div>
         <div className="text-sm">{message.message}</div>
+        <div className="text-xs text-white/70 mt-1">{message.from?.name || 'Anonymous'}</div>
       </div>
     </div>
   );
