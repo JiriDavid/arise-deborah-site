@@ -193,24 +193,8 @@ export async function POST(request, { params }) {
     console.log("LiveKit credentials test passed");
 
     // Fetch the room to get the correct roomId
-    console.log("Connecting to DB...");
     await connectDB();
-    console.log("DB connected successfully");
-
     const room = await PrayerRoom.findById(id);
-    console.log("Room fetch result - found:", !!room, "id:", id);
-    if (room) {
-      console.log("Room data:", {
-        roomId: room.roomId,
-        isActive: room.isActive,
-        isRecurringDaily: room.isRecurringDaily,
-        date: room.date,
-        scheduledStartTime: room.scheduledStartTime,
-        scheduledEndTime: room.scheduledEndTime,
-        timezone: room.timezone,
-        timezoneOffsetMinutes: room.timezoneOffsetMinutes,
-      });
-    }
     if (!room) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
