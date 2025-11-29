@@ -22,7 +22,7 @@ export default function RootLayout({ children }) {
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <body
-          className={`${inter.className} bg-white`}
+          className={`${inter.className}`}
           suppressHydrationWarning
         >
           <LayoutProvider>
