@@ -13,6 +13,7 @@ import {
   useTracks,
   useRoomContext,
   GridLayout,
+  ChatMessage,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { Track } from "livekit-client";
@@ -162,12 +163,14 @@ export default function PrayerRoomPage() {
 
   const handleLeaveRoom = () => exitRoom("/prayer-rooms");
 
-  const handleDisconnected = (reason) => {
-    console.log("LiveKit disconnected with reason:", reason);
-    // Don't auto-redirect, show error instead
-    setError(`Connection lost: ${reason || "Unknown reason"}`);
-    setToken(""); // Clear token to show join screen again
-  };
+  const messageFormatter = (message) => (
+    <div className="flex justify-start mb-2">
+      <div className="bg-white/10 text-white px-4 py-2 rounded-2xl max-w-xs">
+        <div className="text-sm font-semibold mb-1">{message.from?.name || 'Anonymous'}</div>
+        <div className="text-sm">{message.message}</div>
+      </div>
+    </div>
+  );
 
   if (loading) {
     return (
@@ -452,8 +455,10 @@ export default function PrayerRoomPage() {
                   <VideoConferenceComponent />
                 </div>
                 <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-white/10 lg:relative pb-20 lg:pb-0">
-                  <h3 className="text-lg font-semibold text-white mb-4 pt-4 px-4 lg:px-0">Messages</h3>
-                  <Chat />
+                  <h3 className="text-lg font-semibold text-white mb-2 pt-4 px-4 lg:px-0 lg:ml-4">
+                    Messages
+                  </h3>
+                  <Chat messageFormatter={messageFormatter} />
                 </div>
               </div>
             </div>
