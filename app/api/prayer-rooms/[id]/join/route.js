@@ -5,6 +5,11 @@ import connectDB from "@/app/lib/mongodb";
 import PrayerRoom from "@/app/models/PrayerRoom";
 
 const MINUTES_IN_DAY = 24 * 60;
+const DEFAULT_ROOM_TZ_OFFSET = Number.isFinite(
+  Number(process.env.PRAYER_ROOMS_TZ_OFFSET_MINUTES)
+)
+  ? Number(process.env.PRAYER_ROOMS_TZ_OFFSET_MINUTES)
+  : 0;
 
 const parseTimeToMinutes = (timeString) => {
   if (!timeString || typeof timeString !== "string") {
@@ -18,26 +23,47 @@ const parseTimeToMinutes = (timeString) => {
   return hours * 60 + minutes;
 };
 
-const buildDateWithTime = (dateInput, timeString) => {
+const convertUTCToLocal = (date, timezoneOffsetMinutes = 0) => {
+  if (!Number.isFinite(timezoneOffsetMinutes)) return date;
+  return new Date(date.getTime() - timezoneOffsetMinutes * 60 * 1000);
+};
+
+const buildLocalDateWithTime = (
+  dateInput,
+  timeString,
+  timezoneOffsetMinutes = 0
+) => {
   if (!dateInput) return null;
-  const baseDate = new Date(dateInput);
-  if (Number.isNaN(baseDate.getTime())) return null;
+  const baseDateUTC = new Date(dateInput);
+  if (Number.isNaN(baseDateUTC.getTime())) return null;
   const [hours, minutes] = (timeString || "00:00").split(":").map(Number);
   if ([hours, minutes].some((value) => Number.isNaN(value))) {
     return null;
   }
 
-  const result = new Date(baseDate);
-  result.setHours(hours, minutes, 0, 0);
-  return result;
+  const localDate = convertUTCToLocal(baseDateUTC, timezoneOffsetMinutes);
+  localDate.setHours(hours, minutes, 0, 0);
+  return localDate;
 };
 
-const isWithinDailyWindow = (room, referenceDate = new Date()) => {
+const getTimezoneOffsetForRoom = (room) => {
+  if (typeof room?.timezoneOffsetMinutes === "number") {
+    return room.timezoneOffsetMinutes;
+  }
+  return DEFAULT_ROOM_TZ_OFFSET;
+};
+
+const isWithinDailyWindow = (
+  room,
+  referenceDate = new Date(),
+  timezoneOffsetMinutes = 0
+) => {
   if (!room?.isRecurringDaily) {
     return false;
   }
 
-  const nowMinutes = referenceDate.getHours() * 60 + referenceDate.getMinutes();
+  const localNow = convertUTCToLocal(referenceDate, timezoneOffsetMinutes);
+  const nowMinutes = localNow.getHours() * 60 + localNow.getMinutes();
   const startMinutes = parseTimeToMinutes(room.scheduledStartTime);
   const endMinutes = parseTimeToMinutes(room.scheduledEndTime);
 
@@ -59,13 +85,26 @@ const isWithinDailyWindow = (room, referenceDate = new Date()) => {
   return nowMinutes >= start || nowMinutes <= end;
 };
 
-const isWithinSingleSchedule = (room, referenceDate = new Date()) => {
+const isWithinSingleSchedule = (
+  room,
+  referenceDate = new Date(),
+  timezoneOffsetMinutes = 0
+) => {
   if (!room?.date) {
     return false;
   }
 
-  const start = buildDateWithTime(room.date, room.scheduledStartTime);
-  const end = buildDateWithTime(room.date, room.scheduledEndTime);
+  const localNow = convertUTCToLocal(referenceDate, timezoneOffsetMinutes);
+  const start = buildLocalDateWithTime(
+    room.date,
+    room.scheduledStartTime,
+    timezoneOffsetMinutes
+  );
+  const end = buildLocalDateWithTime(
+    room.date,
+    room.scheduledEndTime,
+    timezoneOffsetMinutes
+  );
 
   if (!start || !end) {
     return false;
@@ -76,7 +115,7 @@ const isWithinSingleSchedule = (room, referenceDate = new Date()) => {
     adjustedEnd.setDate(adjustedEnd.getDate() + 1);
   }
 
-  return referenceDate >= start && referenceDate <= adjustedEnd;
+  return localNow >= start && localNow <= adjustedEnd;
 };
 
 // Test LiveKit credentials
@@ -160,10 +199,27 @@ export async function POST(request, { params }) {
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 
+    const timezoneOffsetMinutes = getTimezoneOffsetForRoom(room);
+    console.log(
+      "Room timezone info",
+      room.timezone,
+      timezoneOffsetMinutes,
+      "default",
+      DEFAULT_ROOM_TZ_OFFSET
+    );
+
     // Check if room is active or within its scheduled window
     const now = new Date();
-    const withinDailyWindow = isWithinDailyWindow(room, now);
-    const withinSingleWindow = isWithinSingleSchedule(room, now);
+    const withinDailyWindow = isWithinDailyWindow(
+      room,
+      now,
+      timezoneOffsetMinutes
+    );
+    const withinSingleWindow = isWithinSingleSchedule(
+      room,
+      now,
+      timezoneOffsetMinutes
+    );
     const isRoomActive = Boolean(
       room.isActive || withinDailyWindow || withinSingleWindow
     );

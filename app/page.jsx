@@ -107,7 +107,7 @@ export default function HomePage() {
               <p className="uppercase tracking-[0.35em] text-xs sm:text-sm text-[#FFC94A]/90">
                 Arise Deborah International
               </p>
-              <div className="flex w-full flex-col gap-2 xs:flex-row xs:w-auto sm:flex-row sm:items-center">
+              <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
                 <Link
                   href="/contact"
                   className="rounded-md bg-[#937a38] px-4 py-2 text-sm sm:text-base font-semibold text-white shadow-sm hover:bg-[#a28535] focus-visible:outline-offset-2 focus-visible:outline-primary"

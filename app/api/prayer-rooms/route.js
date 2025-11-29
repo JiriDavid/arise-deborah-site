@@ -3,6 +3,13 @@ import connectDB from "@/app/lib/mongodb";
 import PrayerRoom from "@/app/models/PrayerRoom";
 import { getAdminUser } from "@/app/lib/adminAuth";
 
+const DEFAULT_ROOM_TZ_OFFSET = Number.isFinite(
+  Number(process.env.PRAYER_ROOMS_TZ_OFFSET_MINUTES)
+)
+  ? Number(process.env.PRAYER_ROOMS_TZ_OFFSET_MINUTES)
+  : 0;
+const DEFAULT_ROOM_TIMEZONE = process.env.PRAYER_ROOMS_TZ || "UTC";
+
 // GET all prayer rooms
 export async function GET() {
   try {
@@ -38,6 +45,13 @@ export async function POST(request) {
     await connectDB();
     const data = await request.json();
 
+    const timezoneOffsetMinutes = Number.isFinite(
+      Number(data.timezoneOffsetMinutes)
+    )
+      ? Number(data.timezoneOffsetMinutes)
+      : DEFAULT_ROOM_TZ_OFFSET;
+    const timezone = data.timezone || DEFAULT_ROOM_TIMEZONE;
+
     // Generate unique room ID
     const roomId = `prayer-${Date.now()}-${Math.random()
       .toString(36)
@@ -45,6 +59,8 @@ export async function POST(request) {
 
     const prayerRoom = await PrayerRoom.create({
       ...data,
+      timezone,
+      timezoneOffsetMinutes,
       roomId,
       createdBy: user.id,
     });

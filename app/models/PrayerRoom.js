@@ -15,6 +15,8 @@ const PrayerRoomSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: false },
   isScheduled: { type: Boolean, default: true },
   isRecurringDaily: { type: Boolean, default: false },
+  timezone: { type: String, default: null },
+  timezoneOffsetMinutes: { type: Number, default: null },
   createdBy: { type: String, required: true }, // Clerk user ID
   participants: [
     {

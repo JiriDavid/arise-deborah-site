@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
 import { FiPlus, FiCalendar, FiClock } from "react-icons/fi";
@@ -17,6 +17,8 @@ export default function AdminPrayerRoomsPage() {
     maxParticipants: 50,
     tags: "",
     isRecurringDaily: false,
+    timezone: "UTC",
+    timezoneOffsetMinutes: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -30,6 +32,18 @@ export default function AdminPrayerRoomsPage() {
       [name]: value,
     }));
   };
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const timezone =
+      Intl.DateTimeFormat().resolvedOptions().timeZone || formData.timezone;
+    const timezoneOffsetMinutes = new Date().getTimezoneOffset();
+    setFormData((prev) => ({
+      ...prev,
+      timezone,
+      timezoneOffsetMinutes,
+    }));
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -51,6 +65,8 @@ export default function AdminPrayerRoomsPage() {
         maxParticipants: Number(formData.maxParticipants) || 1,
         isRecurringDaily: formData.isRecurringDaily,
         tags: tagsArray,
+        timezone: formData.timezone,
+        timezoneOffsetMinutes: Number(formData.timezoneOffsetMinutes) || 0,
       };
 
       const response = await fetch("/api/prayer-rooms", {
