@@ -17,7 +17,7 @@ export default function LayoutProvider({ children }) {
   }
 
   if (isImmersiveExperience) {
-    return <main className="min-h-screen bg-[#050203]">{children}</main>;
+    return <main className="min-h-screen bg-[#805127]">{children}</main>;
   }
 
   return (
