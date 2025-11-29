@@ -224,6 +224,20 @@ export async function POST(request, { params }) {
       room.isActive || withinDailyWindow || withinSingleWindow
     );
 
+    console.log("Room active check:", {
+      roomId: room.roomId,
+      isActive: room.isActive,
+      isRecurringDaily: room.isRecurringDaily,
+      date: room.date,
+      scheduledStartTime: room.scheduledStartTime,
+      scheduledEndTime: room.scheduledEndTime,
+      timezoneOffsetMinutes,
+      now: now.toISOString(),
+      withinDailyWindow,
+      withinSingleWindow,
+      isRoomActive,
+    });
+
     if (!isRoomActive) {
       return NextResponse.json(
         { error: "Room is not currently active for this time window" },
