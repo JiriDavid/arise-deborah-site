@@ -21,7 +21,7 @@ function VideoConferenceComponent() {
 
   return (
     <div className="h-full w-full">
-      <VideoConference />
+      <VideoConference controlBar={false} />
     </div>
   );
 }
@@ -448,7 +448,7 @@ export default function PrayerRoomPage() {
                 <div className="flex-1">
                   <VideoConferenceComponent />
                 </div>
-                <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-white/10 lg:relative">
+                <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-white/10 lg:relative pb-20 lg:pb-0">
                   <Chat />
                 </div>
               </div>
