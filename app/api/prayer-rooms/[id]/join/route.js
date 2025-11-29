@@ -63,7 +63,7 @@ const isWithinDailyWindow = (
   }
 
   const localNow = convertUTCToLocal(referenceDate, timezoneOffsetMinutes);
-  const nowMinutes = localNow.getHours() * 60 + localNow.getMinutes();
+  const nowMinutes = localNow.getUTCHours() * 60 + localNow.getUTCMinutes();
   const startMinutes = parseTimeToMinutes(room.scheduledStartTime);
   const endMinutes = parseTimeToMinutes(room.scheduledEndTime);
 
@@ -209,7 +209,7 @@ export async function POST(request, { params }) {
     );
 
     // Check if room is active or within its scheduled window
-    const now = new Date();
+    const now = new Date(Date.now()); // Current UTC time
     const withinDailyWindow = isWithinDailyWindow(
       room,
       now,
