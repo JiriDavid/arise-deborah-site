@@ -23,10 +23,10 @@ export default function RootLayout({ children }) {
       <html lang="en" suppressHydrationWarning>
         <body className={`${inter.className}`} suppressHydrationWarning>
           <LayoutProvider>
-            <SignedOut>
+            {/* <SignedOut>
               <SignInButton />
               <SignUpButton />
-            </SignedOut>
+            </SignedOut> */}
             {/* <SignedIn>
               <UserButton />
             </SignedIn> */}

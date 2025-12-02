@@ -64,11 +64,7 @@ const getRoomScheduleWindow = (room) => {
     room.scheduledStartTime,
     offset
   );
-  const end = buildLocalDateWithTime(
-    room.date,
-    room.scheduledEndTime,
-    offset
-  );
+  const end = buildLocalDateWithTime(room.date, room.scheduledEndTime, offset);
 
   if (!start || !end) return null;
 
@@ -129,9 +125,9 @@ const getRoomTimeDisplay = (room) => {
     }`;
   }
 
-  const range = `${formatViewerLocalTime(window.start)} • ${formatViewerLocalTime(
-    window.end
-  )}`;
+  const range = `${formatViewerLocalTime(
+    window.start
+  )} • ${formatViewerLocalTime(window.end)}`;
   return `${range} (your time)`;
 };
 
@@ -450,7 +446,9 @@ export default function PrayerRoomsPage() {
                       ) : (
                         <div className="rounded-2xl border border-white/10 bg-black/30 px-5 py-3 text-center text-white/60">
                           {roomStatus.status === "scheduled"
-                            ? `Starts at ${roomStatus.nextStartLabel || "--:--"}`
+                            ? `Starts at ${
+                                roomStatus.nextStartLabel || "--:--"
+                              }`
                             : roomStatus.status === "daily"
                             ? `Reopens daily at ${
                                 roomStatus.nextStartLabel || "--:--"
