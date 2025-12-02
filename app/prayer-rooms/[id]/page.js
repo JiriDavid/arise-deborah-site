@@ -39,10 +39,7 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
 
   const recorderToken = recordingConfig?.token;
   const shouldRecord = Boolean(
-    recordingConfig?.shouldRecord &&
-      recorderToken &&
-      roomId &&
-      room
+    recordingConfig?.shouldRecord && recorderToken && roomId && room
   );
 
   const sendCancellation = useCallback(async () => {
@@ -154,7 +151,9 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
     };
 
     wireParticipant(room.localParticipant);
-    room.remoteParticipants.forEach((participant) => wireParticipant(participant));
+    room.remoteParticipants.forEach((participant) =>
+      wireParticipant(participant)
+    );
 
     const handleTrackSubscribed = (track) => addTrack(track);
     const handleTrackUnsubscribed = (track) => removeTrack(track);
@@ -223,7 +222,14 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
         disconnectAll();
       }
     };
-  }, [room, shouldRecord, recordingConfig, uploadRecording, sendCancellation, onFinished]);
+  }, [
+    room,
+    shouldRecord,
+    recordingConfig,
+    uploadRecording,
+    sendCancellation,
+    onFinished,
+  ]);
 
   useEffect(() => () => cleanupAudioRef.current?.(), []);
 

@@ -44,8 +44,10 @@ export default function AdminPrayerRoomsPage() {
     const startMinutes = Math.ceil(now.getMinutes() / 5) * 5;
     now.setMinutes(startMinutes);
     const startTime = now.toTimeString().slice(0, 5); // HH:MM
-    const endTime = new Date(now.getTime() + 2 * 60 * 60 * 1000).toTimeString().slice(0, 5); // +2 hours
-    const today = now.toISOString().split('T')[0]; // YYYY-MM-DD
+    const endTime = new Date(now.getTime() + 2 * 60 * 60 * 1000)
+      .toTimeString()
+      .slice(0, 5); // +2 hours
+    const today = now.toISOString().split("T")[0]; // YYYY-MM-DD
     setFormData((prev) => ({
       ...prev,
       timezone,

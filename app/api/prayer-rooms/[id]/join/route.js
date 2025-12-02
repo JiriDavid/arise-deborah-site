@@ -210,7 +210,8 @@ const isWithinSingleSchedule = (
     adjustedEnd.setUTCDate(adjustedEnd.getUTCDate() + 1);
   }
 
-  const nowUTC = referenceDate instanceof Date ? referenceDate : new Date(referenceDate);
+  const nowUTC =
+    referenceDate instanceof Date ? referenceDate : new Date(referenceDate);
   return nowUTC >= start && nowUTC <= adjustedEnd;
 };
 

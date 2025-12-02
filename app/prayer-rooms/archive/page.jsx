@@ -36,7 +36,9 @@ export default function PrayerRoomArchivePage() {
         }
         const rooms = await response.json();
         const flattened = rooms
-          .filter((room) => Array.isArray(room.recordings) && room.recordings.length)
+          .filter(
+            (room) => Array.isArray(room.recordings) && room.recordings.length
+          )
           .flatMap((room) =>
             room.recordings.map((recording) => ({
               ...recording,
@@ -82,7 +84,10 @@ export default function PrayerRoomArchivePage() {
           <p className="text-white/70">
             Please sign in to listen back to recorded prayer room sessions.
           </p>
-          <SignInButton mode="modal" className="inline-flex justify-center rounded-full bg-[#FFC94A] px-6 py-3 font-semibold text-[#2B1B0F] shadow-lg shadow-[#FFC94A]/40">
+          <SignInButton
+            mode="modal"
+            className="inline-flex justify-center rounded-full bg-[#FFC94A] px-6 py-3 font-semibold text-[#2B1B0F] shadow-lg shadow-[#FFC94A]/40"
+          >
             Sign in to continue
           </SignInButton>
         </div>
@@ -165,7 +170,10 @@ export default function PrayerRoomArchivePage() {
                     Uploaded by: {recording.uploadedBy ? "member" : "system"}
                   </span>
                   <span>
-                    Size: {recording.sizeBytes ? `${(recording.sizeBytes / 1024 / 1024).toFixed(1)} MB` : "--"}
+                    Size:{" "}
+                    {recording.sizeBytes
+                      ? `${(recording.sizeBytes / 1024 / 1024).toFixed(1)} MB`
+                      : "--"}
                   </span>
                 </div>
               </div>
