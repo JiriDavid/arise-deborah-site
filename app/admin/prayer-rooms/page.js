@@ -19,6 +19,7 @@ export default function AdminPrayerRoomsPage() {
     isRecurringDaily: false,
     timezone: "UTC",
     timezoneOffsetMinutes: 0,
+    autoRecordAudio: true,
   });
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -35,13 +36,23 @@ export default function AdminPrayerRoomsPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const now = new Date();
     const timezone =
       Intl.DateTimeFormat().resolvedOptions().timeZone || formData.timezone;
     const timezoneOffsetMinutes = new Date().getTimezoneOffset();
+    // Round start time to next 5 minutes
+    const startMinutes = Math.ceil(now.getMinutes() / 5) * 5;
+    now.setMinutes(startMinutes);
+    const startTime = now.toTimeString().slice(0, 5); // HH:MM
+    const endTime = new Date(now.getTime() + 2 * 60 * 60 * 1000).toTimeString().slice(0, 5); // +2 hours
+    const today = now.toISOString().split('T')[0]; // YYYY-MM-DD
     setFormData((prev) => ({
       ...prev,
       timezone,
       timezoneOffsetMinutes,
+      date: prev.date || today, // Set default date if not set
+      scheduledStartTime: prev.scheduledStartTime || startTime,
+      scheduledEndTime: prev.scheduledEndTime || endTime,
     }));
   }, []);
 
@@ -67,6 +78,7 @@ export default function AdminPrayerRoomsPage() {
         tags: tagsArray,
         timezone: formData.timezone,
         timezoneOffsetMinutes: Number(formData.timezoneOffsetMinutes) || 0,
+        autoRecordAudio: formData.autoRecordAudio,
       };
 
       const response = await fetch("/api/prayer-rooms", {
@@ -277,6 +289,42 @@ export default function AdminPrayerRoomsPage() {
                 <span
                   className={`bg-white w-4 h-4 rounded-full shadow transform transition-transform ${
                     formData.isRecurringDaily ? "translate-x-6" : ""
+                  }`}
+                ></span>
+              </span>
+            </label>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 border rounded-lg p-4">
+            <div>
+              <p className="text-sm font-semibold text-tertiary">
+                Archive audio automatically
+              </p>
+              <p className="text-xs text-accent">
+                When enabled, the session audio is recorded and stored in the
+                members archive for replay.
+              </p>
+            </div>
+            <label className="inline-flex items-center cursor-pointer">
+              <input
+                type="checkbox"
+                className="sr-only"
+                checked={formData.autoRecordAudio}
+                onChange={(e) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    autoRecordAudio: e.target.checked,
+                  }))
+                }
+              />
+              <span
+                className={`w-12 h-6 flex items-center rounded-full p-1 transition-all ${
+                  formData.autoRecordAudio ? "bg-primary" : "bg-gray-300"
+                }`}
+              >
+                <span
+                  className={`bg-white w-4 h-4 rounded-full shadow transform transition-transform ${
+                    formData.autoRecordAudio ? "translate-x-6" : ""
                   }`}
                 ></span>
               </span>

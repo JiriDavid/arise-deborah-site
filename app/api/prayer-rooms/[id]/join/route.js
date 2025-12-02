@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { AccessToken } from "livekit-server-sdk";
 import { auth } from "@clerk/nextjs/server";
+import { randomUUID } from "crypto";
 import connectDB from "@/app/lib/mongodb";
 import PrayerRoom from "@/app/models/PrayerRoom";
 
@@ -34,16 +35,22 @@ const buildLocalDateWithTime = (
   timezoneOffsetMinutes = 0
 ) => {
   if (!dateInput) return null;
-  const baseDateUTC = new Date(dateInput);
-  if (Number.isNaN(baseDateUTC.getTime())) return null;
+  const dateOnly = new Date(dateInput);
+  if (Number.isNaN(dateOnly.getTime())) return null;
   const [hours, minutes] = (timeString || "00:00").split(":").map(Number);
   if ([hours, minutes].some((value) => Number.isNaN(value))) {
     return null;
   }
 
-  const localDate = convertUTCToLocal(baseDateUTC, timezoneOffsetMinutes);
-  localDate.setHours(hours, minutes, 0, 0);
-  return localDate;
+  const year = dateOnly.getUTCFullYear();
+  const month = dateOnly.getUTCMonth();
+  const day = dateOnly.getUTCDate();
+  const localTimestamp = Date.UTC(year, month, day, hours, minutes, 0, 0);
+  const offset = Number.isFinite(timezoneOffsetMinutes)
+    ? timezoneOffsetMinutes
+    : 0;
+  const utcTimestamp = localTimestamp + offset * 60 * 1000;
+  return new Date(utcTimestamp);
 };
 
 const getTimezoneOffsetForRoom = (room) => {
@@ -51,6 +58,95 @@ const getTimezoneOffsetForRoom = (room) => {
     return room.timezoneOffsetMinutes;
   }
   return DEFAULT_ROOM_TZ_OFFSET;
+};
+
+const MAX_RECORDING_WINDOW_MS = 4 * 60 * 60 * 1000;
+
+const isRecordingStale = (activeRecording) => {
+  if (!activeRecording?.startedAt) {
+    return true;
+  }
+  const startedAtTs = new Date(activeRecording.startedAt).getTime();
+  if (Number.isNaN(startedAtTs)) {
+    return true;
+  }
+  return Date.now() - startedAtTs > MAX_RECORDING_WINDOW_MS;
+};
+
+const resetActiveRecordingState = async (roomId) => {
+  await PrayerRoom.findByIdAndUpdate(roomId, {
+    $set: {
+      "activeRecording.status": "idle",
+      "activeRecording.startedAt": null,
+      "activeRecording.startedBy": null,
+      "activeRecording.clientRecorderToken": null,
+    },
+  });
+};
+
+const maybeAssignRecorder = async (room, userId) => {
+  if (!room?.autoRecordAudio) {
+    return { shouldRecord: false };
+  }
+
+  const active = room.activeRecording || {};
+
+  if (
+    active.status === "recording" &&
+    active.clientRecorderToken &&
+    active.startedBy === userId
+  ) {
+    return {
+      shouldRecord: true,
+      token: active.clientRecorderToken,
+      startedAt: active.startedAt,
+      resumed: true,
+    };
+  }
+
+  if (active.status === "recording" && active.clientRecorderToken) {
+    if (isRecordingStale(active)) {
+      await resetActiveRecordingState(room._id);
+    } else {
+      return { shouldRecord: false };
+    }
+  }
+
+  const token = randomUUID();
+  const startedAt = new Date();
+  const updatedRoom = await PrayerRoom.findOneAndUpdate(
+    {
+      _id: room._id,
+      $or: [
+        { "activeRecording.status": { $exists: false } },
+        { "activeRecording.status": { $ne: "recording" } },
+        { "activeRecording.clientRecorderToken": { $exists: false } },
+      ],
+    },
+    {
+      $set: {
+        activeRecording: {
+          status: "recording",
+          startedAt,
+          startedBy: userId,
+          clientRecorderToken: token,
+        },
+      },
+    },
+    { new: true }
+  );
+
+  if (!updatedRoom) {
+    // Someone else already recording
+    return { shouldRecord: false };
+  }
+
+  room.activeRecording = updatedRoom.activeRecording;
+  return {
+    shouldRecord: true,
+    token,
+    startedAt,
+  };
 };
 
 const isWithinDailyWindow = (
@@ -94,7 +190,6 @@ const isWithinSingleSchedule = (
     return false;
   }
 
-  const localNow = convertUTCToLocal(referenceDate, timezoneOffsetMinutes);
   const start = buildLocalDateWithTime(
     room.date,
     room.scheduledStartTime,
@@ -112,10 +207,11 @@ const isWithinSingleSchedule = (
 
   const adjustedEnd = new Date(end);
   if (adjustedEnd <= start) {
-    adjustedEnd.setDate(adjustedEnd.getDate() + 1);
+    adjustedEnd.setUTCDate(adjustedEnd.getUTCDate() + 1);
   }
 
-  return localNow >= start && localNow <= adjustedEnd;
+  const nowUTC = referenceDate instanceof Date ? referenceDate : new Date(referenceDate);
+  return nowUTC >= start && nowUTC <= adjustedEnd;
 };
 
 // Test LiveKit credentials
@@ -261,6 +357,13 @@ export async function POST(request, { params }) {
 
     console.log("Joining room:", room.roomId, "for user:", userId);
 
+    let recordingAssignment = { shouldRecord: false };
+    try {
+      recordingAssignment = await maybeAssignRecorder(room, userId);
+    } catch (recordingError) {
+      console.error("Failed to assign recording token", recordingError);
+    }
+
     // Create LiveKit access token using the roomId field
     const at = new AccessToken(LIVEKIT_API_KEY, LIVEKIT_API_SECRET, {
       identity: userId,
@@ -308,6 +411,7 @@ export async function POST(request, { params }) {
       token,
       url: LIVEKIT_URL,
       roomId: room.roomId,
+      recording: recordingAssignment,
     });
   } catch (error) {
     console.error("Error in join API:", error);

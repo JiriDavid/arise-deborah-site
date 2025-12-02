@@ -15,6 +15,7 @@ const PrayerRoomSchema = new mongoose.Schema({
   isActive: { type: Boolean, default: false },
   isScheduled: { type: Boolean, default: true },
   isRecurringDaily: { type: Boolean, default: false },
+  autoRecordAudio: { type: Boolean, default: true },
   timezone: { type: String, default: null },
   timezoneOffsetMinutes: { type: Number, default: null },
   createdBy: { type: String, required: true }, // Clerk user ID
@@ -28,6 +29,29 @@ const PrayerRoomSchema = new mongoose.Schema({
   ],
   maxParticipants: { type: Number, default: 50 },
   tags: [{ type: String }],
+  recordings: [
+    {
+      url: String,
+      publicId: String,
+      startedAt: Date,
+      endedAt: Date,
+      durationMs: Number,
+      sizeBytes: Number,
+      startedBy: String,
+      uploadedBy: String,
+      createdAt: { type: Date, default: Date.now },
+    },
+  ],
+  activeRecording: {
+    status: {
+      type: String,
+      enum: ["idle", "recording"],
+      default: "idle",
+    },
+    startedAt: { type: Date, default: null },
+    startedBy: { type: String, default: null },
+    clientRecorderToken: { type: String, default: null },
+  },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now },
 });

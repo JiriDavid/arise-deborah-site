@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useUser, SignInButton, SignUpButton } from "@clerk/nextjs";
 import {
@@ -16,7 +16,7 @@ import {
   ChatMessage,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
-import { Track } from "livekit-client";
+import { Track, RoomEvent } from "livekit-client";
 
 function VideoConferenceComponent() {
   const tracks = useTracks([Track.Source.Camera, Track.Source.Microphone]);
@@ -26,6 +26,214 @@ function VideoConferenceComponent() {
       <GridLayout tracks={tracks}>
         <ParticipantTile />
       </GridLayout>
+    </div>
+  );
+}
+
+function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
+  const room = useRoomContext();
+  const recorderRef = useRef(null);
+  const startedAtRef = useRef(null);
+  const cleanupAudioRef = useRef(null);
+  const [status, setStatus] = useState("idle");
+
+  const recorderToken = recordingConfig?.token;
+  const shouldRecord = Boolean(
+    recordingConfig?.shouldRecord &&
+      recorderToken &&
+      roomId &&
+      room
+  );
+
+  const sendCancellation = useCallback(async () => {
+    if (!roomId || !recorderToken) return;
+    try {
+      const formData = new FormData();
+      formData.append("recordingToken", recorderToken);
+      formData.append("intent", "cancel");
+      await fetch(`/api/prayer-rooms/${roomId}/recordings/upload`, {
+        method: "POST",
+        body: formData,
+      });
+    } catch (cancelError) {
+      console.error("Failed to cancel recording token", cancelError);
+    }
+  }, [roomId, recorderToken]);
+
+  const uploadRecording = useCallback(
+    async (blob, durationMs) => {
+      if (!roomId || !recorderToken) {
+        return;
+      }
+      const formData = new FormData();
+      const filename = `prayer-room-${roomId}-${Date.now()}.webm`;
+      formData.append("file", blob, filename);
+      formData.append("recordingToken", recorderToken);
+      const startedAt =
+        startedAtRef.current ||
+        (recordingConfig?.startedAt
+          ? new Date(recordingConfig.startedAt)
+          : new Date());
+      formData.append("startedAt", startedAt.toISOString());
+      formData.append("endedAt", new Date().toISOString());
+      if (Number.isFinite(durationMs)) {
+        formData.append("durationMs", String(Math.max(durationMs, 0)));
+      }
+      const response = await fetch(
+        `/api/prayer-rooms/${roomId}/recordings/upload`,
+        {
+          method: "POST",
+          body: formData,
+        }
+      );
+      if (!response.ok) {
+        throw new Error(`Upload failed with status ${response.status}`);
+      }
+    },
+    [roomId, recorderToken, recordingConfig?.startedAt]
+  );
+
+  useEffect(() => {
+    if (!shouldRecord) {
+      return undefined;
+    }
+
+    if (
+      typeof window === "undefined" ||
+      typeof window.MediaRecorder === "undefined"
+    ) {
+      console.warn("MediaRecorder API unavailable; cancelling recording");
+      sendCancellation();
+      return undefined;
+    }
+
+    const AudioContextCls = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextCls) {
+      console.warn("AudioContext unsupported; cancelling recording");
+      sendCancellation();
+      return undefined;
+    }
+
+    const audioContext = new AudioContextCls();
+    const destination = audioContext.createMediaStreamDestination();
+    const sources = new Map();
+    const chunks = [];
+
+    const disconnectAll = () => {
+      sources.forEach((source) => source.disconnect());
+      sources.clear();
+      audioContext.close();
+    };
+    cleanupAudioRef.current = disconnectAll;
+
+    const addTrack = (track) => {
+      if (!track || track.kind !== Track.Kind.Audio) return;
+      const mediaStreamTrack = track.mediaStreamTrack;
+      if (!mediaStreamTrack) return;
+      const stream = new MediaStream([mediaStreamTrack]);
+      const sourceNode = audioContext.createMediaStreamSource(stream);
+      sourceNode.connect(destination);
+      sources.set(track.sid, sourceNode);
+    };
+
+    const removeTrack = (track) => {
+      if (!track) return;
+      const existing = sources.get(track.sid);
+      if (existing) {
+        existing.disconnect();
+        sources.delete(track.sid);
+      }
+    };
+
+    const wireParticipant = (participant) => {
+      participant?.audioTrackPublications?.forEach((publication) => {
+        if (publication.track) {
+          addTrack(publication.track);
+        }
+      });
+    };
+
+    wireParticipant(room.localParticipant);
+    room.remoteParticipants.forEach((participant) => wireParticipant(participant));
+
+    const handleTrackSubscribed = (track) => addTrack(track);
+    const handleTrackUnsubscribed = (track) => removeTrack(track);
+    const handleDisconnected = () => {
+      if (recorderRef.current && recorderRef.current.state !== "inactive") {
+        recorderRef.current.stop();
+      }
+    };
+
+    room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+    room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+    room.on(RoomEvent.Disconnected, handleDisconnected);
+
+    const mimeType = window.MediaRecorder.isTypeSupported?.(
+      "audio/webm;codecs=opus"
+    )
+      ? "audio/webm;codecs=opus"
+      : undefined;
+    const recorder = new MediaRecorder(
+      destination.stream,
+      mimeType ? { mimeType } : undefined
+    );
+    recorderRef.current = recorder;
+    const startedAt = recordingConfig?.startedAt
+      ? new Date(recordingConfig.startedAt)
+      : new Date();
+    startedAtRef.current = startedAt;
+    setStatus("recording");
+
+    recorder.ondataavailable = (event) => {
+      if (event.data && event.data.size > 0) {
+        chunks.push(event.data);
+      }
+    };
+
+    recorder.onstop = async () => {
+      try {
+        if (!chunks.length) {
+          await sendCancellation();
+          return;
+        }
+        const durationMs = Date.now() - startedAt.getTime();
+        const blob = new Blob(chunks, { type: "audio/webm" });
+        await uploadRecording(blob, durationMs);
+        setStatus("uploaded");
+        onFinished?.();
+      } catch (uploadError) {
+        console.error("Recording upload failed", uploadError);
+        await sendCancellation();
+        setStatus("error");
+      } finally {
+        disconnectAll();
+      }
+    };
+
+    recorder.start(5000);
+
+    return () => {
+      room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed);
+      room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
+      room.off(RoomEvent.Disconnected, handleDisconnected);
+
+      if (recorder.state !== "inactive") {
+        recorder.stop();
+      } else {
+        disconnectAll();
+      }
+    };
+  }, [room, shouldRecord, recordingConfig, uploadRecording, sendCancellation, onFinished]);
+
+  useEffect(() => () => cleanupAudioRef.current?.(), []);
+
+  if (status !== "recording") {
+    return null;
+  }
+
+  return (
+    <div className="pointer-events-none fixed bottom-24 right-4 z-40 rounded-full border border-white/20 bg-red-600/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg shadow-red-900/40">
+      Recording
     </div>
   );
 }
@@ -40,6 +248,7 @@ export default function PrayerRoomPage() {
   const [error, setError] = useState("");
   const [isConnecting, setIsConnecting] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
+  const [recordingAssignment, setRecordingAssignment] = useState(null);
 
   const scheduleDetails = () => {
     if (room?.isRecurringDaily) {
@@ -118,6 +327,7 @@ export default function PrayerRoomPage() {
         const data = await response.json();
         console.log("Token received:", data);
         setToken(data.token);
+        setRecordingAssignment(data.recording || { shouldRecord: false });
       } else {
         console.error("Join room failed - response status:", response.status);
         console.error(
@@ -158,6 +368,7 @@ export default function PrayerRoomPage() {
       destination
     );
     setToken("");
+    setRecordingAssignment(null);
     router.push(destination);
   };
 
@@ -174,10 +385,18 @@ export default function PrayerRoomPage() {
     <div className="flex justify-start mb-2">
       <div className="bg-white/10 text-white px-4 py-2 rounded-2xl max-w-xs">
         <div className="text-sm">{message.message}</div>
-        <div className="text-xs text-white/70 mt-1">{message.from?.name || 'Anonymous'}</div>
+        <div className="text-xs text-white/70 mt-1">
+          {message.from?.name || "Anonymous"}
+        </div>
       </div>
     </div>
   );
+
+  const handleRecordingFinished = () => {
+    setRecordingAssignment((prev) =>
+      prev ? { ...prev, shouldRecord: false } : prev
+    );
+  };
 
   if (loading) {
     return (
@@ -302,6 +521,15 @@ export default function PrayerRoomPage() {
                   </p>
                 </div>
               )}
+
+              {room?.autoRecordAudio && (
+                <div className="flex items-center gap-3 p-4 rounded-2xl border border-white/10 bg-white/5">
+                  <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
+                  <p className="text-sm text-white/80">
+                    Sessions are archived automatically as audio for members.
+                  </p>
+                </div>
+              )}
             </section>
 
             <section className="bg-white text-gray-900 rounded-3xl shadow-2xl shadow-[#FFC94A]/20 p-8 flex flex-col gap-6">
@@ -423,6 +651,21 @@ export default function PrayerRoomPage() {
         </div>
       </div>
 
+      <div className="px-4 space-y-3">
+        {room?.autoRecordAudio && (
+          <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
+            <span className="font-semibold text-red-300 mr-2">●</span>
+            Audio archive enabled — this session is stored for members.
+          </div>
+        )}
+        {recordingAssignment?.shouldRecord && (
+          <div className="rounded-2xl border border-amber-400/40 bg-amber-500/10 px-4 py-3 text-sm text-amber-100">
+            You are the active recorder. Keep this tab open until the session
+            ends so the audio archive uploads automatically.
+          </div>
+        )}
+      </div>
+
       <div className="px-4 pb-6 h-[calc(100vh-150px)]">
         <div className="relative h-full rounded-3xl border border-white/10  backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/40">
           <div className="pointer-events-none absolute left-6 top-6 z-10 hidden max-w-lg flex-col gap-1 rounded-2xl bg-black/40 px-4 py-3 md:flex">
@@ -475,6 +718,11 @@ export default function PrayerRoomPage() {
               <ControlBar />
             </div>
 
+            <PrayerRoomRecorder
+              roomId={room?._id}
+              recordingConfig={recordingAssignment}
+              onFinished={handleRecordingFinished}
+            />
             <RoomAudioRenderer />
           </LiveKitRoom>
         </div>

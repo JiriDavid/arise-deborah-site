@@ -10,6 +10,27 @@ const DEFAULT_ROOM_TZ_OFFSET = Number.isFinite(
   : 0;
 const DEFAULT_ROOM_TIMEZONE = process.env.PRAYER_ROOMS_TZ || "UTC";
 
+const buildLocalDateWithTime = (
+  dateInput,
+  timeString,
+  timezoneOffsetMinutes = 0
+) => {
+  if (!dateInput) return null;
+  const baseDateUTC = new Date(dateInput);
+  if (Number.isNaN(baseDateUTC.getTime())) return null;
+  const [hours, minutes] = (timeString || "00:00").split(":").map(Number);
+  if ([hours, minutes].some((value) => Number.isNaN(value))) return null;
+  const year = baseDateUTC.getUTCFullYear();
+  const month = baseDateUTC.getUTCMonth();
+  const day = baseDateUTC.getUTCDate();
+  const localTimestamp = Date.UTC(year, month, day, hours, minutes, 0, 0);
+  const offset = Number.isFinite(timezoneOffsetMinutes)
+    ? timezoneOffsetMinutes
+    : 0;
+  const utcTimestamp = localTimestamp + offset * 60 * 1000;
+  return new Date(utcTimestamp);
+};
+
 // GET all prayer rooms
 export async function GET() {
   try {
@@ -51,6 +72,21 @@ export async function POST(request) {
       ? Number(data.timezoneOffsetMinutes)
       : DEFAULT_ROOM_TZ_OFFSET;
     const timezone = data.timezone || DEFAULT_ROOM_TIMEZONE;
+
+    // Validate single-session rooms are not already ended
+    if (!data.isRecurringDaily && data.date && data.scheduledEndTime) {
+      const endDateTime = buildLocalDateWithTime(
+        data.date,
+        data.scheduledEndTime,
+        timezoneOffsetMinutes
+      );
+      if (endDateTime && endDateTime <= new Date()) {
+        return NextResponse.json(
+          { error: "Cannot create a prayer room that ends in the past" },
+          { status: 400 }
+        );
+      }
+    }
 
     // Generate unique room ID
     const roomId = `prayer-${Date.now()}-${Math.random()
