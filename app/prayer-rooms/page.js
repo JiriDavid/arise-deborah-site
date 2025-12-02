@@ -8,6 +8,11 @@ import { useUser } from "@clerk/nextjs";
 import { FiVideo, FiUsers, FiCalendar, FiClock, FiPlus } from "react-icons/fi";
 
 const MINUTES_IN_DAY = 24 * 60;
+const DEFAULT_ROOM_TZ_OFFSET = Number.isFinite(
+  Number(process.env.NEXT_PUBLIC_PRAYER_ROOMS_TZ_OFFSET_MINUTES)
+)
+  ? Number(process.env.NEXT_PUBLIC_PRAYER_ROOMS_TZ_OFFSET_MINUTES)
+  : 0;
 
 const parseTimeToMinutes = (timeString) => {
   if (!timeString) return null;
@@ -16,19 +21,161 @@ const parseTimeToMinutes = (timeString) => {
   return hours * 60 + minutes;
 };
 
-const isWithinDailyWindow = (room) => {
-  if (!room?.isRecurringDaily) return false;
-  const now = new Date();
-  const nowMinutes = now.getHours() * 60 + now.getMinutes();
-  const startMinutes = parseTimeToMinutes(room.scheduledStartTime) ?? 0;
-  const endMinutes =
-    parseTimeToMinutes(room.scheduledEndTime) ?? MINUTES_IN_DAY - 1;
-
-  if (startMinutes === endMinutes) return true;
-  if (startMinutes < endMinutes) {
-    return nowMinutes >= startMinutes && nowMinutes <= endMinutes;
+const getRoomTimezoneOffset = (room) => {
+  if (Number.isFinite(room?.timezoneOffsetMinutes)) {
+    return room.timezoneOffsetMinutes;
   }
-  return nowMinutes >= startMinutes || nowMinutes <= endMinutes;
+  return DEFAULT_ROOM_TZ_OFFSET;
+};
+
+const convertUTCToLocal = (date, timezoneOffsetMinutes = 0) => {
+  if (!(date instanceof Date)) return null;
+  const timestamp = date.getTime();
+  if (!Number.isFinite(timestamp)) return null;
+  return new Date(timestamp - timezoneOffsetMinutes * 60 * 1000);
+};
+
+const buildLocalDateWithTime = (
+  dateInput,
+  timeString,
+  timezoneOffsetMinutes = 0
+) => {
+  if (!dateInput) return null;
+  const baseDateUTC = new Date(dateInput);
+  if (Number.isNaN(baseDateUTC.getTime())) return null;
+  const [hours, minutes] = (timeString || "00:00").split(":").map(Number);
+  if ([hours, minutes].some((value) => Number.isNaN(value))) return null;
+
+  const year = baseDateUTC.getUTCFullYear();
+  const month = baseDateUTC.getUTCMonth();
+  const day = baseDateUTC.getUTCDate();
+  const localTimestamp = Date.UTC(year, month, day, hours, minutes, 0, 0);
+  const offset = Number.isFinite(timezoneOffsetMinutes)
+    ? timezoneOffsetMinutes
+    : 0;
+  return new Date(localTimestamp + offset * 60 * 1000);
+};
+
+const getRoomScheduleWindow = (room) => {
+  if (!room?.date) return null;
+  const offset = getRoomTimezoneOffset(room);
+  const start = buildLocalDateWithTime(
+    room.date,
+    room.scheduledStartTime,
+    offset
+  );
+  const end = buildLocalDateWithTime(
+    room.date,
+    room.scheduledEndTime,
+    offset
+  );
+
+  if (!start || !end) return null;
+
+  const adjustedEnd = new Date(end);
+  if (adjustedEnd <= start) {
+    adjustedEnd.setUTCDate(adjustedEnd.getUTCDate() + 1);
+  }
+
+  return { start, end: adjustedEnd };
+};
+
+const formatViewerLocalTime = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    return "--:--";
+  }
+  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+};
+
+const getDailyWindowForDisplay = (room, timezoneOffsetMinutes) => {
+  if (!room?.isRecurringDaily) return null;
+  const localNow = convertUTCToLocal(new Date(), timezoneOffsetMinutes);
+  if (!localNow) return null;
+  const year = localNow.getUTCFullYear();
+  const month = String(localNow.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(localNow.getUTCDate()).padStart(2, "0");
+  const localDateString = `${year}-${month}-${day}`;
+
+  const start = buildLocalDateWithTime(
+    localDateString,
+    room.scheduledStartTime,
+    timezoneOffsetMinutes
+  );
+  const end = buildLocalDateWithTime(
+    localDateString,
+    room.scheduledEndTime,
+    timezoneOffsetMinutes
+  );
+
+  if (!start || !end) return null;
+
+  const adjustedEnd = new Date(end);
+  if (adjustedEnd <= start) {
+    adjustedEnd.setUTCDate(adjustedEnd.getUTCDate() + 1);
+  }
+
+  return { start, end: adjustedEnd };
+};
+
+const getRoomTimeDisplay = (room) => {
+  const timezoneOffset = getRoomTimezoneOffset(room);
+  const window = room.isRecurringDaily
+    ? getDailyWindowForDisplay(room, timezoneOffset)
+    : getRoomScheduleWindow(room);
+
+  if (!window) {
+    return `${room.scheduledStartTime || "--:--"} • ${
+      room.scheduledEndTime || "--:--"
+    }`;
+  }
+
+  const range = `${formatViewerLocalTime(window.start)} • ${formatViewerLocalTime(
+    window.end
+  )}`;
+  return `${range} (your time)`;
+};
+
+const formatRoomDateDisplay = (room) => {
+  if (room.isRecurringDaily) {
+    return "Daily window";
+  }
+  if (!room.date) {
+    return "Date TBA";
+  }
+  const localDate = convertUTCToLocal(
+    new Date(room.date),
+    getRoomTimezoneOffset(room)
+  );
+  if (!localDate) {
+    return "Date TBA";
+  }
+  return format(localDate, "PPP");
+};
+
+const isWithinDailyWindow = (room, timezoneOffsetMinutes = 0) => {
+  if (!room?.isRecurringDaily) return false;
+  const localNow = convertUTCToLocal(new Date(), timezoneOffsetMinutes);
+  if (!localNow) return false;
+  const nowMinutes = localNow.getUTCHours() * 60 + localNow.getUTCMinutes();
+  const startMinutes = parseTimeToMinutes(room.scheduledStartTime);
+  const endMinutes = parseTimeToMinutes(room.scheduledEndTime);
+
+  if (startMinutes === null && endMinutes === null) {
+    return true;
+  }
+
+  const start = startMinutes ?? 0;
+  const end = endMinutes ?? MINUTES_IN_DAY - 1;
+
+  if (start === end) {
+    return true;
+  }
+
+  if (start < end) {
+    return nowMinutes >= start && nowMinutes <= end;
+  }
+
+  return nowMinutes >= start || nowMinutes <= end;
 };
 
 export default function PrayerRoomsPage() {
@@ -60,6 +207,8 @@ export default function PrayerRoomsPage() {
 
   const getRoomStatus = (room) => {
     const now = new Date();
+    const timezoneOffset = getRoomTimezoneOffset(room);
+    const scheduleWindow = getRoomScheduleWindow(room);
 
     if (room.isActive) {
       return {
@@ -71,12 +220,19 @@ export default function PrayerRoomsPage() {
     }
 
     if (room.isRecurringDaily) {
-      if (isWithinDailyWindow(room)) {
+      const withinDaily = isWithinDailyWindow(room, timezoneOffset);
+      const windowForDisplay = getDailyWindowForDisplay(room, timezoneOffset);
+      const nextStartLabel = windowForDisplay?.start
+        ? formatViewerLocalTime(windowForDisplay.start)
+        : room.scheduledStartTime;
+
+      if (withinDaily) {
         return {
           status: "active",
           color: "bg-green-500",
           text: "IN SESSION",
           canJoin: true,
+          nextStartLabel,
         };
       }
       return {
@@ -84,10 +240,11 @@ export default function PrayerRoomsPage() {
         color: "bg-purple-600",
         text: "DAILY",
         canJoin: false,
+        nextStartLabel,
       };
     }
 
-    if (!room.date) {
+    if (!room.date || !scheduleWindow) {
       return {
         status: "unscheduled",
         color: "bg-gray-500",
@@ -96,39 +253,32 @@ export default function PrayerRoomsPage() {
       };
     }
 
-    const roomDate = new Date(room.date);
-    const [startHour, startMinute] = (room.scheduledStartTime || "00:00").split(
-      ":"
-    );
-    const [endHour, endMinute] = (room.scheduledEndTime || "00:00").split(":");
-
-    const startTime = new Date(roomDate);
-    startTime.setHours(parseInt(startHour, 10), parseInt(startMinute, 10));
-
-    const endTime = new Date(roomDate);
-    endTime.setHours(parseInt(endHour, 10), parseInt(endMinute, 10));
-
-    if (now >= startTime && now <= endTime) {
+    if (now >= scheduleWindow.start && now <= scheduleWindow.end) {
       return {
         status: "active",
         color: "bg-green-500",
         text: "IN SESSION",
         canJoin: true,
+        nextStartLabel: formatViewerLocalTime(scheduleWindow.start),
       };
     }
-    if (now < startTime) {
+
+    if (now < scheduleWindow.start) {
       return {
         status: "scheduled",
         color: "bg-blue-500",
         text: "SCHEDULED",
         canJoin: false,
+        nextStartLabel: formatViewerLocalTime(scheduleWindow.start),
       };
     }
+
     return {
       status: "ended",
       color: "bg-gray-500",
       text: "ENDED",
       canJoin: false,
+      nextStartLabel: formatViewerLocalTime(scheduleWindow.start),
     };
   };
 
@@ -237,14 +387,8 @@ export default function PrayerRoomsPage() {
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
               {prayerRooms.map((room, index) => {
                 const roomStatus = getRoomStatus(room);
-                const dateDisplay = room.isRecurringDaily
-                  ? "Daily window"
-                  : room.date
-                  ? format(new Date(room.date), "PPP")
-                  : "Date TBA";
-                const timeDisplay = `${room.scheduledStartTime || "--:--"} • ${
-                  room.scheduledEndTime || "--:--"
-                }`;
+                const dateDisplay = formatRoomDateDisplay(room);
+                const timeDisplay = getRoomTimeDisplay(room);
 
                 return (
                   <motion.article
@@ -306,9 +450,11 @@ export default function PrayerRoomsPage() {
                       ) : (
                         <div className="rounded-2xl border border-white/10 bg-black/30 px-5 py-3 text-center text-white/60">
                           {roomStatus.status === "scheduled"
-                            ? `Starts at ${room.scheduledStartTime}`
+                            ? `Starts at ${roomStatus.nextStartLabel || "--:--"}`
                             : roomStatus.status === "daily"
-                            ? `Reopens daily at ${room.scheduledStartTime}`
+                            ? `Reopens daily at ${
+                                roomStatus.nextStartLabel || "--:--"
+                              }`
                             : roomStatus.status === "ended"
                             ? "Session ended"
                             : "Awaiting activation"}
