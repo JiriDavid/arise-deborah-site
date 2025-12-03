@@ -85,8 +85,22 @@ const resetActiveRecordingState = async (roomId) => {
 };
 
 const maybeAssignRecorder = async (room, userId) => {
-  if (!room?.autoRecordAudio) {
+  const recordingEnabled = room?.autoRecordAudio !== false;
+  if (!recordingEnabled) {
     return { shouldRecord: false };
+  }
+
+  if (room && typeof room.autoRecordAudio === "undefined") {
+    room.autoRecordAudio = true;
+    try {
+      await room.save();
+    } catch (persistError) {
+      console.warn(
+        "Failed to persist default autoRecordAudio flag for room",
+        room._id,
+        persistError
+      );
+    }
   }
 
   const active = room.activeRecording || {};

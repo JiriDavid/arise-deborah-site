@@ -65,7 +65,7 @@ export default function SermonsPage() {
           </p>
           <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3">
-              <h1 className="text-4xl font-semibold leading-tight">
+              <h1 className="md:text-4xl font-semibold leading-tight text-xl">
                 Sermons that disciple women for prayer, leadership, and impact.
               </h1>
               <p className="text-white/80">

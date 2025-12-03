@@ -64,7 +64,7 @@ export default function GivingPage() {
             </p>
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-2xl space-y-3">
-                <h1 className="text-4xl font-bold leading-snug">
+                <h1 className="md:text-4xl font-bold leading-snug text-xl">
                   Every seed becomes discipleship, relief, and revival rooms.
                 </h1>
                 <p className="text-white/80">

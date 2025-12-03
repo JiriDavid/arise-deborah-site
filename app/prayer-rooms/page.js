@@ -318,7 +318,7 @@ export default function PrayerRoomsPage() {
           </p>
           <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="space-y-3">
-              <h1 className="text-4xl font-semibold leading-tight">
+              <h1 className="md:text-4xl font-semibold leading-tight text-xl">
                 Step into watch rooms igniting intercession across nations.
               </h1>
               <p className="text-white/75">

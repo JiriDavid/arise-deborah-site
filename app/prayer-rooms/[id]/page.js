@@ -16,7 +16,13 @@ import {
   ChatMessage,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
-import { Track, RoomEvent } from "livekit-client";
+import {
+  Track,
+  RoomEvent,
+  ParticipantEvent,
+  RoomState,
+  TrackPublicationEvent,
+} from "livekit-client";
 
 function VideoConferenceComponent() {
   const tracks = useTracks([Track.Source.Camera, Track.Source.Microphone]);
@@ -91,7 +97,7 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
   );
 
   useEffect(() => {
-    if (!shouldRecord) {
+    if (!shouldRecord || !room || room.state !== RoomState.Connected) {
       return undefined;
     }
 
@@ -114,6 +120,9 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
     const audioContext = new AudioContextCls();
     const destination = audioContext.createMediaStreamDestination();
     const sources = new Map();
+    const wiredParticipants = new Set();
+    const participantHandlers = new Map();
+    const publicationListeners = new Map();
     const chunks = [];
 
     const disconnectAll = () => {
@@ -123,8 +132,22 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
     };
     cleanupAudioRef.current = disconnectAll;
 
+    const isRecordableTrack = (track) => {
+      if (!track) return false;
+      if (
+        track.source === Track.Source.Microphone ||
+        track.source === Track.Source.ScreenShareAudio
+      ) {
+        return true;
+      }
+      return track.kind === Track.Kind.Audio;
+    };
+
+    const getPublicationKey = (publication) =>
+      publication?.trackSid || publication?.sid || publication?.source;
+
     const addTrack = (track) => {
-      if (!track || track.kind !== Track.Kind.Audio) return;
+      if (!isRecordableTrack(track)) return;
       const mediaStreamTrack = track.mediaStreamTrack;
       if (!mediaStreamTrack) return;
       const stream = new MediaStream([mediaStreamTrack]);
@@ -142,19 +165,6 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
       }
     };
 
-    const wireParticipant = (participant) => {
-      participant?.audioTrackPublications?.forEach((publication) => {
-        if (publication.track) {
-          addTrack(publication.track);
-        }
-      });
-    };
-
-    wireParticipant(room.localParticipant);
-    room.remoteParticipants.forEach((participant) =>
-      wireParticipant(participant)
-    );
-
     const handleTrackSubscribed = (track) => addTrack(track);
     const handleTrackUnsubscribed = (track) => removeTrack(track);
     const handleDisconnected = () => {
@@ -163,15 +173,158 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
       }
     };
 
+    // Mirrors LiveKit JS guidance for mixing audio via TrackPublication subscriptions.
+    const wirePublication = (publication) => {
+      if (!publication) return;
+      const key = getPublicationKey(publication);
+      if (!key || publicationListeners.has(key)) {
+        if (publication.track) {
+          addTrack(publication.track);
+        }
+        return;
+      }
+
+      const onPublicationSubscribed = (track) => addTrack(track);
+      const onPublicationUnsubscribed = (track) => removeTrack(track);
+      publication.on(
+        TrackPublicationEvent.TrackSubscribed,
+        onPublicationSubscribed
+      );
+      publication.on(
+        TrackPublicationEvent.TrackUnsubscribed,
+        onPublicationUnsubscribed
+      );
+      publicationListeners.set(key, {
+        publication,
+        onPublicationSubscribed,
+        onPublicationUnsubscribed,
+      });
+
+      if (publication.track) {
+        addTrack(publication.track);
+      }
+    };
+
+    const unwirePublication = (publication) => {
+      if (!publication) return;
+      const key = getPublicationKey(publication);
+      const listeners = key ? publicationListeners.get(key) : null;
+      if (!listeners) {
+        if (publication.track) {
+          removeTrack(publication.track);
+        }
+        return;
+      }
+      publication.off(
+        TrackPublicationEvent.TrackSubscribed,
+        listeners.onPublicationSubscribed
+      );
+      publication.off(
+        TrackPublicationEvent.TrackUnsubscribed,
+        listeners.onPublicationUnsubscribed
+      );
+      publicationListeners.delete(key);
+      if (publication.track) {
+        removeTrack(publication.track);
+      }
+    };
+
+    const handleParticipantTrackPublished = (publication) => {
+      wirePublication(publication);
+    };
+
+    const handleParticipantTrackUnpublished = (publication) => {
+      unwirePublication(publication);
+    };
+
+    const wireParticipant = (participant) => {
+      if (!participant || wiredParticipants.has(participant.sid)) {
+        return;
+      }
+
+      participant?.audioTrackPublications?.forEach((publication) => {
+        wirePublication(publication);
+      });
+
+      participant.on(ParticipantEvent.TrackSubscribed, handleTrackSubscribed);
+      participant.on(
+        ParticipantEvent.TrackUnsubscribed,
+        handleTrackUnsubscribed
+      );
+      participant.on(
+        ParticipantEvent.TrackPublished,
+        handleParticipantTrackPublished
+      );
+      participant.on(
+        ParticipantEvent.TrackUnpublished,
+        handleParticipantTrackUnpublished
+      );
+      participantHandlers.set(participant.sid, {
+        handleParticipantTrackPublished,
+        handleParticipantTrackUnpublished,
+      });
+      wiredParticipants.add(participant.sid);
+    };
+
+    const unwireParticipant = (participant) => {
+      if (!participant || !wiredParticipants.has(participant.sid)) {
+        return;
+      }
+      participant.off(ParticipantEvent.TrackSubscribed, handleTrackSubscribed);
+      participant.off(
+        ParticipantEvent.TrackUnsubscribed,
+        handleTrackUnsubscribed
+      );
+      const handlerSet = participantHandlers.get(participant.sid);
+      if (handlerSet) {
+        participant.off(
+          ParticipantEvent.TrackPublished,
+          handlerSet.handleParticipantTrackPublished
+        );
+        participant.off(
+          ParticipantEvent.TrackUnpublished,
+          handlerSet.handleParticipantTrackUnpublished
+        );
+        participantHandlers.delete(participant.sid);
+      }
+      participant?.audioTrackPublications?.forEach((publication) => {
+        unwirePublication(publication);
+      });
+      wiredParticipants.delete(participant.sid);
+    };
+
+    wireParticipant(room.localParticipant);
+    room.remoteParticipants.forEach((participant) =>
+      wireParticipant(participant)
+    );
+
     room.on(RoomEvent.TrackSubscribed, handleTrackSubscribed);
     room.on(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
     room.on(RoomEvent.Disconnected, handleDisconnected);
+    room.on(RoomEvent.ParticipantConnected, wireParticipant);
+    room.on(RoomEvent.ParticipantDisconnected, unwireParticipant);
 
-    const mimeType = window.MediaRecorder.isTypeSupported?.(
-      "audio/webm;codecs=opus"
-    )
-      ? "audio/webm;codecs=opus"
-      : undefined;
+    const destinationTracks = destination.stream.getAudioTracks();
+    if (!destinationTracks.length) {
+      console.warn(
+        "Recorder destination has no audio tracks yet; waiting for LiveKit subscriptions."
+      );
+    }
+
+    const preferredMimeTypes = [
+      "audio/webm;codecs=opus",
+      "audio/webm",
+      "audio/mp4",
+      "audio/mpeg",
+    ];
+    const mimeType = preferredMimeTypes.find((type) =>
+      window.MediaRecorder.isTypeSupported?.(type)
+    );
+    if (!mimeType) {
+      console.warn(
+        "MediaRecorder audio mime type unsupported; browser default container will be used."
+      );
+    }
     const recorder = new MediaRecorder(
       destination.stream,
       mimeType ? { mimeType } : undefined
@@ -215,6 +368,25 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
       room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed);
       room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
       room.off(RoomEvent.Disconnected, handleDisconnected);
+      room.off(RoomEvent.ParticipantConnected, wireParticipant);
+      room.off(RoomEvent.ParticipantDisconnected, unwireParticipant);
+
+      const participantSids = Array.from(wiredParticipants);
+      participantSids.forEach((participantSid) => {
+        const participant =
+          participantSid === room.localParticipant?.sid
+            ? room.localParticipant
+            : room.remoteParticipants.get(participantSid);
+        if (participant) {
+          unwireParticipant(participant);
+        }
+      });
+      wiredParticipants.clear();
+      const publicationEntries = Array.from(publicationListeners.values());
+      publicationEntries.forEach(({ publication }) => {
+        unwirePublication(publication);
+      });
+      publicationListeners.clear();
 
       if (recorder.state !== "inactive") {
         recorder.stop();
@@ -224,6 +396,7 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
     };
   }, [
     room,
+    room?.state,
     shouldRecord,
     recordingConfig,
     uploadRecording,
@@ -255,6 +428,7 @@ export default function PrayerRoomPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [recordingAssignment, setRecordingAssignment] = useState(null);
+  const autoRecordEnabled = room ? room.autoRecordAudio !== false : false;
 
   const scheduleDetails = () => {
     if (room?.isRecurringDaily) {
@@ -528,7 +702,7 @@ export default function PrayerRoomPage() {
                 </div>
               )}
 
-              {room?.autoRecordAudio && (
+              {autoRecordEnabled && (
                 <div className="flex items-center gap-3 p-4 rounded-2xl border border-white/10 bg-white/5">
                   <span className="h-2 w-2 rounded-full bg-red-400 animate-pulse" />
                   <p className="text-sm text-white/80">
@@ -658,7 +832,7 @@ export default function PrayerRoomPage() {
       </div>
 
       <div className="px-4 space-y-3">
-        {room?.autoRecordAudio && (
+        {autoRecordEnabled && (
           <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/80">
             <span className="font-semibold text-red-300 mr-2">●</span>
             Audio archive enabled — this session is stored for members.
