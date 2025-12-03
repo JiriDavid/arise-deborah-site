@@ -20,7 +20,6 @@ import {
   Track,
   RoomEvent,
   ParticipantEvent,
-  RoomState,
   TrackPublicationEvent,
 } from "livekit-client";
 
@@ -97,7 +96,7 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
   );
 
   useEffect(() => {
-    if (!shouldRecord || !room || room.state !== RoomState.Connected) {
+    if (!shouldRecord || !room || room.state !== "connected") {
       return undefined;
     }
 
