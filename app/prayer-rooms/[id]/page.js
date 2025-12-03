@@ -96,7 +96,7 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
   );
 
   useEffect(() => {
-    if (!shouldRecord || !room || room.state !== "connected") {
+    if (!shouldRecord || !room) {
       return undefined;
     }
 
@@ -395,7 +395,6 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
     };
   }, [
     room,
-    room?.state,
     shouldRecord,
     recordingConfig,
     uploadRecording,
