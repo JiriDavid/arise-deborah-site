@@ -9,10 +9,13 @@ const cloudinaryApiKey =
   process.env.CLOUDINARY_API_KEY || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
 const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
 
+const uploadPreset = process.env.CLOUDINARY_UPLOAD_PRESET || "arisedeborah";
+
 const uploadBufferToCloudinary = (buffer, filename) =>
   new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
+        upload_preset: uploadPreset,
         folder: "prayer-room-archive",
         resource_type: "video",
         public_id: filename,
@@ -42,24 +45,39 @@ const resetRecordingState = async (room) => {
 };
 
 export async function POST(request, { params }) {
+  console.log("[Upload Route] POST request received");
   try {
     const { userId } = await auth();
+    console.log("[Upload Route] Auth userId:", userId);
     if (!userId) {
+      console.warn("[Upload Route] No userId - unauthorized");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     const { id } = await params;
+    console.log("[Upload Route] Room ID:", id);
     await connectDB();
     const room = await PrayerRoom.findById(id);
+    console.log("[Upload Route] Room found:", {
+      roomId: room?._id,
+      hasRecording: !!room?.activeRecording,
+    });
     if (!room) {
+      console.warn("[Upload Route] Room not found");
       return NextResponse.json({ error: "Room not found" }, { status: 404 });
     }
 
     const formData = await request.formData();
     const recordingToken = formData.get("recordingToken");
     const intent = formData.get("intent") || "upload";
+    console.log("[Upload Route] FormData:", {
+      intent,
+      hasToken: !!recordingToken,
+      tokenLength: recordingToken?.length,
+    });
 
     if (!recordingToken) {
+      console.warn("[Upload Route] No recording token");
       return NextResponse.json(
         { error: "Recording token missing" },
         { status: 400 }
@@ -67,12 +85,20 @@ export async function POST(request, { params }) {
     }
 
     const activeToken = room?.activeRecording?.clientRecorderToken;
+    console.log("[Upload Route] Token validation:", {
+      activeToken: activeToken?.slice?.(0, 8),
+      receivedToken: recordingToken?.slice?.(0, 8),
+      match: activeToken === recordingToken,
+      recordingStatus: room?.activeRecording?.status,
+    });
     if (!activeToken || activeToken !== recordingToken) {
+      console.warn("[Upload Route] Token mismatch - rejecting upload");
       return NextResponse.json(
         { error: "Invalid or expired recording token" },
         { status: 403 }
       );
     }
+    console.log("[Upload Route] Token validated - proceeding with upload");
 
     if (intent === "cancel") {
       await resetRecordingState(room);
@@ -133,9 +159,13 @@ export async function POST(request, { params }) {
 
     return NextResponse.json({ recording: recordingEntry });
   } catch (error) {
-    console.error("Audio upload failed:", error);
+    console.error("[Upload Route] Caught error:", {
+      message: error?.message,
+      code: error?.code,
+      http_code: error?.http_code,
+    });
     return NextResponse.json(
-      { error: "Failed to upload recording" },
+      { error: error?.message || "Failed to upload recording" },
       { status: 500 }
     );
   }

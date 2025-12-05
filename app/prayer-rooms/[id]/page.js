@@ -16,12 +16,46 @@ import {
   ChatMessage,
 } from "@livekit/components-react";
 import "@livekit/components-styles";
-import {
-  Track,
-  RoomEvent,
-  ParticipantEvent,
-  TrackPublicationEvent,
-} from "livekit-client";
+import { Track, RoomEvent, ParticipantEvent } from "livekit-client";
+
+function ParticipantTracker({ onParticipantsChange }) {
+  const room = useRoomContext();
+
+  useEffect(() => {
+    if (!room) return;
+
+    const updateParticipants = () => {
+      const participants = new Set();
+
+      // Add local participant
+      if (room.localParticipant?.name) {
+        participants.add(room.localParticipant.name);
+      }
+
+      // Add remote participants
+      room.remoteParticipants.forEach((participant) => {
+        if (participant.name) {
+          participants.add(participant.name);
+        }
+      });
+
+      onParticipantsChange(participants);
+    };
+
+    updateParticipants();
+
+    // Listen for participant changes
+    room.on("participantConnected", updateParticipants);
+    room.on("participantDisconnected", updateParticipants);
+
+    return () => {
+      room.off("participantConnected", updateParticipants);
+      room.off("participantDisconnected", updateParticipants);
+    };
+  }, [room, onParticipantsChange]);
+
+  return null;
+}
 
 function VideoConferenceComponent() {
   const tracks = useTracks([Track.Source.Camera, Track.Source.Microphone]);
@@ -48,7 +82,11 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
   );
 
   const sendCancellation = useCallback(async () => {
-    if (!roomId || !recorderToken) return;
+    if (!roomId || !recorderToken) {
+      console.warn("[Cancellation] Missing roomId or token");
+      return;
+    }
+    console.log("[Cancellation] Sending cancellation request");
     try {
       const formData = new FormData();
       formData.append("recordingToken", recorderToken);
@@ -57,6 +95,7 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
         method: "POST",
         body: formData,
       });
+      console.log("[Cancellation] Sent successfully");
     } catch (cancelError) {
       console.error("Failed to cancel recording token", cancelError);
     }
@@ -65,8 +104,14 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
   const uploadRecording = useCallback(
     async (blob, durationMs) => {
       if (!roomId || !recorderToken) {
+        console.error("[Upload] Missing roomId or recorderToken");
         return;
       }
+      console.log(
+        `[Upload] Starting upload: blob size=${
+          blob.size
+        }, durationMs=${durationMs}, token=${recorderToken?.slice?.(0, 8)}...`
+      );
       const formData = new FormData();
       const filename = `prayer-room-${roomId}-${Date.now()}.webm`;
       formData.append("file", blob, filename);
@@ -81,6 +126,12 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
       if (Number.isFinite(durationMs)) {
         formData.append("durationMs", String(Math.max(durationMs, 0)));
       }
+      console.log(
+        `[Upload] FormData prepared with file=${!!blob}, token=${recorderToken?.slice?.(
+          0,
+          8
+        )}...`
+      );
       const response = await fetch(
         `/api/prayer-rooms/${roomId}/recordings/upload`,
         {
@@ -88,9 +139,15 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
           body: formData,
         }
       );
+      console.log(`[Upload] Response status: ${response.status}`);
       if (!response.ok) {
-        throw new Error(`Upload failed with status ${response.status}`);
+        const errorText = await response.text();
+        console.error(`[Upload] Response error text: ${errorText}`);
+        throw new Error(
+          `Upload failed with status ${response.status}: ${errorText}`
+        );
       }
+      console.log(`[Upload] Upload completed successfully`);
     },
     [roomId, recorderToken, recordingConfig?.startedAt]
   );
@@ -123,11 +180,19 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
     const participantHandlers = new Map();
     const publicationListeners = new Map();
     const chunks = [];
+    let hasConnectedTracks = false;
 
     const disconnectAll = () => {
       sources.forEach((source) => source.disconnect());
       sources.clear();
-      audioContext.close();
+      try {
+        audioContext.close();
+      } catch (err) {
+        console.warn(
+          "[Recorder] AudioContext close error (may already be closed):",
+          err.message
+        );
+      }
     };
     cleanupAudioRef.current = disconnectAll;
 
@@ -149,10 +214,15 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
       if (!isRecordableTrack(track)) return;
       const mediaStreamTrack = track.mediaStreamTrack;
       if (!mediaStreamTrack) return;
+      console.log(
+        `[Recorder] Adding track: ${track.source || track.kind} (${track.sid})`
+      );
       const stream = new MediaStream([mediaStreamTrack]);
       const sourceNode = audioContext.createMediaStreamSource(stream);
       sourceNode.connect(destination);
       sources.set(track.sid, sourceNode);
+      hasConnectedTracks = true;
+      console.log(`[Recorder] Track connected. Total sources: ${sources.size}`);
     };
 
     const removeTrack = (track) => {
@@ -185,14 +255,8 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
 
       const onPublicationSubscribed = (track) => addTrack(track);
       const onPublicationUnsubscribed = (track) => removeTrack(track);
-      publication.on(
-        TrackPublicationEvent.TrackSubscribed,
-        onPublicationSubscribed
-      );
-      publication.on(
-        TrackPublicationEvent.TrackUnsubscribed,
-        onPublicationUnsubscribed
-      );
+      publication.on("trackSubscribed", onPublicationSubscribed);
+      publication.on("trackUnsubscribed", onPublicationUnsubscribed);
       publicationListeners.set(key, {
         publication,
         onPublicationSubscribed,
@@ -214,22 +278,12 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
         }
         return;
       }
-      publication.off(
-        TrackPublicationEvent.TrackSubscribed,
-        listeners.onPublicationSubscribed
-      );
-      publication.off(
-        TrackPublicationEvent.TrackUnsubscribed,
-        listeners.onPublicationUnsubscribed
-      );
+      publication.off("trackSubscribed", listeners.onPublicationSubscribed);
+      publication.off("trackUnsubscribed", listeners.onPublicationUnsubscribed);
       publicationListeners.delete(key);
       if (publication.track) {
         removeTrack(publication.track);
       }
-    };
-
-    const handleParticipantTrackPublished = (publication) => {
-      wirePublication(publication);
     };
 
     const handleParticipantTrackUnpublished = (publication) => {
@@ -241,9 +295,41 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
         return;
       }
 
+      console.log(
+        `[Recorder] Wiring participant: ${participant.name} (${participant.sid}), audio publications: ${participant.audioTrackPublications.size}`
+      );
+
+      // Wire existing publications
       participant?.audioTrackPublications?.forEach((publication) => {
+        console.log(
+          `[Recorder] - Found audio publication: ${
+            publication.source
+          }, track: ${!!publication.track}, subscribed: ${
+            publication.isSubscribed
+          }`
+        );
         wirePublication(publication);
       });
+
+      // Handle new publications as they arrive
+      const handleParticipantTrackPublishedLocal = (publication) => {
+        console.log(
+          `[Recorder] New track published from ${participant.name}: ${publication.source}`
+        );
+        wirePublication(publication);
+        // For local participant, automatically subscribe to audio tracks
+        if (
+          participant === room.localParticipant &&
+          publication.source === Track.Source.Microphone
+        ) {
+          console.log(
+            `[Recorder] Local microphone published - auto-subscribing`
+          );
+          if (!publication.isSubscribed) {
+            publication.setSubscribed(true);
+          }
+        }
+      };
 
       participant.on(ParticipantEvent.TrackSubscribed, handleTrackSubscribed);
       participant.on(
@@ -252,14 +338,14 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
       );
       participant.on(
         ParticipantEvent.TrackPublished,
-        handleParticipantTrackPublished
+        handleParticipantTrackPublishedLocal
       );
       participant.on(
         ParticipantEvent.TrackUnpublished,
         handleParticipantTrackUnpublished
       );
       participantHandlers.set(participant.sid, {
-        handleParticipantTrackPublished,
+        handleParticipantTrackPublished: handleParticipantTrackPublishedLocal,
         handleParticipantTrackUnpublished,
       });
       wiredParticipants.add(participant.sid);
@@ -303,6 +389,59 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
     room.on(RoomEvent.ParticipantConnected, wireParticipant);
     room.on(RoomEvent.ParticipantDisconnected, unwireParticipant);
 
+    // Continuously check for and subscribe to audio tracks as they appear
+    // This is especially important for local participant microphone that publishes after room connection
+    let subscriptionLoopActive = true;
+    let loopIterations = 0;
+    const subscriptionLoop = async () => {
+      while (subscriptionLoopActive) {
+        try {
+          loopIterations++;
+          if (loopIterations <= 3 || loopIterations % 10 === 0) {
+            console.log(
+              `[Recorder] Subscription loop iteration ${loopIterations}`
+            );
+          }
+          const allParticipants = [
+            room.localParticipant,
+            ...room.remoteParticipants.values(),
+          ];
+          allParticipants.forEach((participant) => {
+            if (!participant) return;
+            const audioPublications = Array.from(
+              participant.audioTrackPublications.values()
+            );
+            if (
+              audioPublications.length > 0 &&
+              (loopIterations <= 3 || loopIterations % 10 === 0)
+            ) {
+              console.log(
+                `[Recorder] Found ${
+                  audioPublications.length
+                } audio publications from ${participant.name || "unknown"}`
+              );
+            }
+            audioPublications.forEach((publication) => {
+              if (publication && !publication.isSubscribed) {
+                console.log(
+                  `[Recorder] Auto-subscribing to audio: ${
+                    publication.source
+                  } from ${participant.name || "unknown"}`
+                );
+                publication.setSubscribed(true);
+              }
+            });
+          });
+        } catch (err) {
+          console.error("[Recorder] Error in subscription loop:", err);
+        }
+        // Check every 500ms for new publications
+        await new Promise((resolve) => setTimeout(resolve, 500));
+      }
+    };
+
+    subscriptionLoop();
+
     const destinationTracks = destination.stream.getAudioTracks();
     if (!destinationTracks.length) {
       console.warn(
@@ -337,23 +476,38 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
 
     recorder.ondataavailable = (event) => {
       if (event.data && event.data.size > 0) {
+        console.log(
+          `[Recorder] Data chunk received: ${
+            event.data.size
+          } bytes (total chunks: ${chunks.length + 1})`
+        );
         chunks.push(event.data);
       }
     };
 
     recorder.onstop = async () => {
       try {
+        console.log(`[Recorder] Stop triggered with ${chunks.length} chunks`);
         if (!chunks.length) {
+          console.warn("[Recorder] No chunks collected - cancelling recording");
           await sendCancellation();
           return;
         }
         const durationMs = Date.now() - startedAt.getTime();
+        console.log(
+          `[Recorder] Creating blob from ${chunks.length} chunks, duration: ${durationMs}ms`
+        );
         const blob = new Blob(chunks, { type: "audio/webm" });
+        console.log(
+          `[Recorder] Blob created: ${blob.size} bytes, uploading...`
+        );
         await uploadRecording(blob, durationMs);
+        console.log(`[Recorder] Upload succeeded`);
         setStatus("uploaded");
         onFinished?.();
       } catch (uploadError) {
-        console.error("Recording upload failed", uploadError);
+        console.error("[Recorder] Recording upload failed:", uploadError);
+        console.log("[Recorder] Sending cancellation due to upload error");
         await sendCancellation();
         setStatus("error");
       } finally {
@@ -361,9 +515,31 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
       }
     };
 
-    recorder.start(5000);
+    // Wait for at least one audio track to be wired before starting recorder
+    const startRecorder = async () => {
+      let attempts = 0;
+      const maxAttempts = 50; // 5 seconds at 100ms intervals
+      while (!hasConnectedTracks && attempts < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        attempts++;
+      }
+      if (!hasConnectedTracks && attempts >= maxAttempts) {
+        console.warn(
+          "[Recorder] No audio tracks connected after 5 seconds, starting anyway"
+        );
+      }
+      if (recorder.state === "inactive") {
+        console.log(
+          `[Recorder] Starting with ${sources.size} audio source(s) connected`
+        );
+        recorder.start(5000);
+      }
+    };
+
+    startRecorder();
 
     return () => {
+      subscriptionLoopActive = false;
       room.off(RoomEvent.TrackSubscribed, handleTrackSubscribed);
       room.off(RoomEvent.TrackUnsubscribed, handleTrackUnsubscribed);
       room.off(RoomEvent.Disconnected, handleDisconnected);
@@ -410,7 +586,7 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
 
   return (
     <div className="pointer-events-none fixed bottom-24 right-4 z-40 rounded-full border border-white/20 bg-red-600/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg shadow-red-900/40">
-      Recording
+      
     </div>
   );
 }
@@ -426,6 +602,9 @@ export default function PrayerRoomPage() {
   const [isConnecting, setIsConnecting] = useState(false);
   const [showSignInModal, setShowSignInModal] = useState(false);
   const [recordingAssignment, setRecordingAssignment] = useState(null);
+  const [pinnedPrayers, setPinnedPrayers] = useState(new Set());
+  const [messageReactions, setMessageReactions] = useState({});
+  const [onlineParticipants, setOnlineParticipants] = useState(new Set());
   const autoRecordEnabled = room ? room.autoRecordAudio !== false : false;
 
   const scheduleDetails = () => {
@@ -559,16 +738,25 @@ export default function PrayerRoomPage() {
     setToken(""); // Clear token to show join screen again
   };
 
-  const messageFormatter = (message) => (
-    <div className="flex justify-start mb-2">
-      <div className="bg-white/10 text-white px-4 py-2 rounded-2xl max-w-xs">
-        <div className="text-sm">{message.message}</div>
-        <div className="text-xs text-white/70 mt-1">
-          {message.from?.name || "Anonymous"}
+  const messageFormatter = (message) => {
+    // LiveKit Chat passes the message as a string directly, not an object
+    const messageText =
+      typeof message === "string"
+        ? message
+        : message?.message || message?.text || String(message);
+
+    if (!messageText) {
+      return undefined;
+    }
+
+    return (
+      <div className="flex flex-col gap-1 mb-4 px-2">
+        <div className="text-sm text-red-400 bg-red-900/30 rounded px-3 py-2 break-words">
+          {messageText}
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   const handleRecordingFinished = () => {
     setRecordingAssignment((prev) =>
@@ -844,66 +1032,160 @@ export default function PrayerRoomPage() {
         )}
       </div>
 
-      <div className="px-4 pb-6 h-[calc(100vh-150px)]">
-        <div className="relative h-full rounded-3xl border border-white/10  backdrop-blur-xl overflow-hidden shadow-2xl shadow-black/40">
-          <div className="pointer-events-none absolute left-6 top-6 z-10 hidden max-w-lg flex-col gap-1 rounded-2xl bg-black/40 px-4 py-3 md:flex">
-            {/* <span className="text-xs uppercase tracking-[0.35em] text-white/70">
-              Now streaming
-            </span>
-            <p className="text-lg font-semibold">{room?.title}</p>
-            <p className="text-sm text-white/70 line-clamp-2">
-              {room?.description}
-            </p> */}
-          </div>
-          <LiveKitRoom
-            token={token}
-            serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
-            connect={true}
-            onDisconnected={handleDisconnected}
-            onConnected={() => console.log("LiveKit connected successfully")}
-            onError={(error) => {
-              console.error("LiveKit connection error:", error);
-              console.error("Error details:", {
-                message: error.message,
-                name: error.name,
-                stack: error.stack,
-              });
-              setError(
-                `Connection failed: ${
-                  error.message || "Unknown connection error"
-                }`
-              );
-              setToken("");
-            }}
-            className="h-full w-full"
-          >
-            <div className="h-full flex flex-col">
-              <div className="flex-1 flex flex-col lg:flex-row">
-                <div className="flex-1">
-                  <VideoConferenceComponent />
-                </div>
-                <div className="w-full lg:w-80 border-t lg:border-t-0 lg:border-l border-white/10 lg:relative pb-20 lg:pb-0">
-                  <h3 className="text-lg font-semibold text-white mb-2 pt-4 px-4 lg:px-0 lg:ml-4">
-                    Messages
-                  </h3>
-                  <Chat messageFormatter={messageFormatter} />
-                </div>
+      <div className="h-[calc(100vh-80px)] flex flex-col">
+        <LiveKitRoom
+          token={token}
+          serverUrl={process.env.NEXT_PUBLIC_LIVEKIT_URL}
+          connect={true}
+          onDisconnected={handleDisconnected}
+          onConnected={() => console.log("LiveKit connected successfully")}
+          onError={(error) => {
+            console.error("LiveKit connection error:", error);
+            console.error("Error details:", {
+              message: error.message,
+              name: error.name,
+              stack: error.stack,
+            });
+            setError(
+              `Connection failed: ${
+                error.message || "Unknown connection error"
+              }`
+            );
+            setToken("");
+          }}
+          className="h-full w-full flex flex-col"
+        >
+          <ParticipantTracker onParticipantsChange={setOnlineParticipants} />
+
+          {/* Main Content Area - Google Meet Style */}
+          <div className="flex-1 flex min-h-0">
+            {/* Video Grid Area */}
+            <div className="flex-1 bg-[#202124] p-2 min-h-0">
+              <div className="h-full rounded-lg overflow-hidden">
+                <VideoConferenceComponent />
               </div>
             </div>
 
-            {/* Fixed ControlBar for all devices */}
-            <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-sm border-t border-white/10 px-4 py-3 z-50">
+            {/* Chat Sidebar - Google Meet Style */}
+            <div className="w-[360px] hidden lg:flex flex-col bg-[#202124] border-l border-[#3c4043]">
+              {/* Chat Header */}
+              <div className="flex-shrink-0 h-14 px-4 flex items-center justify-between border-b border-[#3c4043]">
+                <h3 className="text-base font-medium text-white">
+                  In-call messages
+                </h3>
+                <button className="p-2 hover:bg-[#3c4043] rounded-full transition">
+                  <svg
+                    className="w-5 h-5 text-white/70"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
+
+              {/* Participants Count */}
+              <div className="flex-shrink-0 px-4 py-3 border-b border-[#3c4043]">
+                <div className="flex items-center gap-2 text-sm text-[#9aa0a6]">
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                  <span>
+                    {onlineParticipants.size} participant
+                    {onlineParticipants.size !== 1 ? "s" : ""}
+                  </span>
+                </div>
+                {onlineParticipants.size > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {Array.from(onlineParticipants)
+                      .slice(0, 4)
+                      .map((participant, idx) => (
+                        <span
+                          key={idx}
+                          className="text-xs bg-[#3c4043] text-[#e8eaed] px-2 py-1 rounded-full truncate max-w-[80px]"
+                        >
+                          {participant}
+                        </span>
+                      ))}
+                    {onlineParticipants.size > 4 && (
+                      <span className="text-xs text-[#9aa0a6] px-2 py-1">
+                        +{onlineParticipants.size - 4}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Messages Area */}
+              <div className="flex-1 overflow-y-auto min-h-0 px-4 py-3">
+                <Chat messageFormatter={messageFormatter} />
+              </div>
+
+              {/* Info Footer */}
+              <div className="flex-shrink-0 px-4 py-3 border-t border-[#3c4043]">
+                <p className="text-xs text-[#9aa0a6] text-center">
+                  Messages can only be seen by people in the call
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Control Bar - Google Meet Style (Centered) */}
+          <div className="flex-shrink-0 h-20 bg-[#202124] flex items-center justify-center px-4 relative">
+            {/* Left - Meeting Info */}
+            <div className="absolute left-4 text-sm text-[#9aa0a6] hidden md:block">
+              {new Date().toLocaleTimeString("en-US", {
+                hour: "numeric",
+                minute: "2-digit",
+              })}
+            </div>
+
+            {/* Center - Controls */}
+            <div className="flex items-center gap-3">
               <ControlBar />
             </div>
 
-            <PrayerRoomRecorder
-              roomId={room?._id}
-              recordingConfig={recordingAssignment}
-              onFinished={handleRecordingFinished}
-            />
-            <RoomAudioRenderer />
-          </LiveKitRoom>
-        </div>
+            {/* Right - End Call */}
+            <div className="absolute right-4">
+              <button
+                onClick={handleLeaveRoom}
+                className="bg-[#ea4335] hover:bg-[#d93025] text-white px-6 py-3 rounded-full font-medium flex items-center gap-2 transition"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path d="M12 9c-1.6 0-3.15.25-4.6.72v3.1c0 .39-.23.74-.56.9-.98.49-1.87 1.12-2.66 1.85-.18.18-.43.28-.7.28-.28 0-.53-.11-.71-.29L.29 13.08c-.18-.17-.29-.42-.29-.7 0-.28.11-.53.29-.71C3.34 8.78 7.46 7 12 7s8.66 1.78 11.71 4.67c.18.18.29.43.29.71 0 .28-.11.53-.29.71l-2.48 2.48c-.18.18-.43.29-.71.29-.27 0-.52-.1-.7-.28-.79-.73-1.68-1.36-2.66-1.85-.33-.16-.56-.5-.56-.9v-3.1C15.15 9.25 13.6 9 12 9z" />
+                </svg>
+                Leave
+              </button>
+            </div>
+          </div>
+
+          <PrayerRoomRecorder
+            roomId={room?._id}
+            recordingConfig={recordingAssignment}
+            onFinished={handleRecordingFinished}
+          />
+          <RoomAudioRenderer />
+        </LiveKitRoom>
       </div>
     </div>
   );
