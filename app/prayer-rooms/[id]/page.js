@@ -154,6 +154,11 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
 
   useEffect(() => {
     if (!shouldRecord || !room) {
+      console.log(
+        "[Recorder] Skipping start (shouldRecord=%s, room=%s)",
+        shouldRecord,
+        !!room
+      );
       return undefined;
     }
 
@@ -581,12 +586,20 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
   useEffect(() => () => cleanupAudioRef.current?.(), []);
 
   if (status !== "recording") {
-    return null;
+    return status === "uploaded" ? (
+      <div className="pointer-events-none fixed bottom-24 right-4 z-40 rounded-full border border-white/20 bg-green-600/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg shadow-green-900/40">
+        Uploaded
+      </div>
+    ) : status === "error" ? (
+      <div className="pointer-events-none fixed bottom-24 right-4 z-40 rounded-full border border-white/20 bg-red-700/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg shadow-red-900/40">
+        Recording Error
+      </div>
+    ) : null;
   }
 
   return (
     <div className="pointer-events-none fixed bottom-24 right-4 z-40 rounded-full border border-white/20 bg-red-600/90 px-4 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-white shadow-lg shadow-red-900/40">
-      
+      Recording
     </div>
   );
 }
