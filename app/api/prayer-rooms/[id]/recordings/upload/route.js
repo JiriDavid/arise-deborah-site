@@ -87,13 +87,29 @@ export async function POST(request, { params }) {
     }
 
     const activeToken = room?.activeRecording?.clientRecorderToken;
+    const recordingStatus = room?.activeRecording?.status;
     console.log("[Upload Route] Token validation:", {
       activeToken: activeToken?.slice?.(0, 8),
       receivedToken: recordingToken?.slice?.(0, 8),
       match: activeToken === recordingToken,
-      recordingStatus: room?.activeRecording?.status,
+      recordingStatus,
     });
-    if (!activeToken || activeToken !== recordingToken) {
+
+    const tokenMatches = Boolean(activeToken && activeToken === recordingToken);
+
+    if (intent === "cancel") {
+      if (!tokenMatches) {
+        console.warn(
+          "[Upload Route] Cancel called but token mismatch or idle; treating as already reset"
+        );
+        await resetRecordingState(room);
+        return NextResponse.json({ cancelled: true, tokenMismatch: true });
+      }
+      await resetRecordingState(room);
+      return NextResponse.json({ cancelled: true });
+    }
+
+    if (!tokenMatches) {
       console.warn("[Upload Route] Token mismatch - rejecting upload");
       return NextResponse.json(
         { error: "Invalid or expired recording token" },
@@ -101,11 +117,6 @@ export async function POST(request, { params }) {
       );
     }
     console.log("[Upload Route] Token validated - proceeding with upload");
-
-    if (intent === "cancel") {
-      await resetRecordingState(room);
-      return NextResponse.json({ cancelled: true });
-    }
 
     const file = formData.get("file");
     if (!file || typeof file === "string") {
