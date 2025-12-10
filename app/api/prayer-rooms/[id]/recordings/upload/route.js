@@ -110,13 +110,23 @@ export async function POST(request, { params }) {
     }
 
     if (!tokenMatches) {
-      console.warn("[Upload Route] Token mismatch - rejecting upload");
-      return NextResponse.json(
-        { error: "Invalid or expired recording token" },
-        { status: 403 }
-      );
+      // If the server state is already idle and the client still had chunks to upload,
+      // accept the upload to avoid losing the recording, but flag it in logs.
+      if (!activeToken && recordingStatus !== "recording") {
+        console.warn(
+          "[Upload Route] Token mismatch but server is idle — accepting upload to salvage recording"
+        );
+      } else {
+        console.warn("[Upload Route] Token mismatch - rejecting upload");
+        return NextResponse.json(
+          { error: "Invalid or expired recording token" },
+          { status: 403 }
+        );
+      }
     }
-    console.log("[Upload Route] Token validated - proceeding with upload");
+    console.log(
+      "[Upload Route] Token validated or salvaged - proceeding with upload"
+    );
 
     const file = formData.get("file");
     if (!file || typeof file === "string") {
@@ -140,7 +150,7 @@ export async function POST(request, { params }) {
     const endedAt = formData.get("endedAt") || new Date().toISOString();
     const durationMs = Number(formData.get("durationMs"));
 
-    const filename = `audio-${room.roomId}-${Date.now()}`;
+    const filename = `audio-${room.roomId || room._id}-${Date.now()}`;
     const uploadResult = await uploadBufferToCloudinary(buffer, filename);
 
     const computedDuration =
