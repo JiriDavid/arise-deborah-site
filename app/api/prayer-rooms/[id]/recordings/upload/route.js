@@ -4,7 +4,8 @@ import connectDB from "@/app/lib/mongodb";
 import PrayerRoom from "@/app/models/PrayerRoom";
 import cloudinary from "@/app/lib/cloudinary";
 
-const cloudName = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+const cloudName =
+  process.env.CLOUDINARY_CLOUD_NAME || process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
 const cloudinaryApiKey =
   process.env.CLOUDINARY_API_KEY || process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY;
 const cloudinaryApiSecret = process.env.CLOUDINARY_API_SECRET;
