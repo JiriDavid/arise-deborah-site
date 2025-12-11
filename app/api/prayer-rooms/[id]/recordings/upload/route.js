@@ -98,15 +98,15 @@ export async function POST(request, { params }) {
     const tokenMatches = Boolean(activeToken && activeToken === recordingToken);
 
     if (intent === "cancel") {
+      console.log("[Upload Route] Cancel intent received; tokenMatches=", tokenMatches);
       if (!tokenMatches) {
         console.warn(
           "[Upload Route] Cancel called but token mismatch or idle; treating as already reset"
         );
-        await resetRecordingState(room);
-        return NextResponse.json({ cancelled: true, tokenMismatch: true });
       }
       await resetRecordingState(room);
-      return NextResponse.json({ cancelled: true });
+      console.log("[Upload Route] Recording state reset for cancel");
+      return NextResponse.json({ cancelled: true, tokenMismatch: !tokenMatches });
     }
 
     if (!tokenMatches) {
