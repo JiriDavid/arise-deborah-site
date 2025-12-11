@@ -409,7 +409,9 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
           loopIterations++;
           if (loopIterations <= 3 || loopIterations % 10 === 0) {
             console.log(
-              `[Recorder] Subscription loop iteration ${loopIterations}, room connected: ${room.connectionState === "connected"}`
+              `[Recorder] Subscription loop iteration ${loopIterations}, room connected: ${
+                room.connectionState === "connected"
+              }`
             );
           }
           const allParticipants = [
