@@ -17,11 +17,9 @@ const uploadBufferToCloudinary = (buffer, filename) =>
   new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
       {
-        upload_preset: uploadPreset,
         folder: "prayer-room-archive",
         resource_type: "video",
         public_id: filename,
-        // format: "webm", // Let Cloudinary detect format
         overwrite: false,
       },
       (error, result) => {
