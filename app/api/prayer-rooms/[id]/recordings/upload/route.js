@@ -143,6 +143,11 @@ export async function POST(request, { params }) {
     }
 
     if (!cloudName || !cloudinaryApiKey || !cloudinaryApiSecret) {
+      console.error("[Upload Route] Cloudinary env missing", {
+        cloudName: !!cloudName,
+        apiKey: !!cloudinaryApiKey,
+        apiSecret: !!cloudinaryApiSecret,
+      });
       return NextResponse.json(
         { error: "Cloudinary is not configured" },
         { status: 500 }
@@ -157,7 +162,26 @@ export async function POST(request, { params }) {
     const durationMs = Number(formData.get("durationMs"));
 
     const filename = `audio-${room.roomId || room._id}-${Date.now()}`;
-    const uploadResult = await uploadBufferToCloudinary(buffer, filename);
+    let uploadResult;
+    try {
+      uploadResult = await uploadBufferToCloudinary(buffer, filename);
+    } catch (cloudErr) {
+      console.error("[Upload Route] Cloudinary upload failed", {
+        message: cloudErr?.message,
+        http_code: cloudErr?.http_code,
+        statusCode: cloudErr?.statusCode,
+        name: cloudErr?.name,
+        context: cloudErr?.context,
+      });
+      return NextResponse.json(
+        {
+          error: "Cloudinary upload failed",
+          detail: cloudErr?.message,
+          http_code: cloudErr?.http_code || cloudErr?.statusCode,
+        },
+        { status: 502 }
+      );
+    }
 
     const computedDuration =
       Number.isFinite(durationMs) && durationMs > 0
