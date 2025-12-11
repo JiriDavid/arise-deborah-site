@@ -162,6 +162,11 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
       return undefined;
     }
 
+    if (room.connectionState !== "connected") {
+      console.log("[Recorder] Room not fully connected yet, skipping start");
+      return undefined;
+    }
+
     if (
       typeof window === "undefined" ||
       typeof window.MediaRecorder === "undefined"
@@ -404,7 +409,7 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
           loopIterations++;
           if (loopIterations <= 3 || loopIterations % 10 === 0) {
             console.log(
-              `[Recorder] Subscription loop iteration ${loopIterations}`
+              `[Recorder] Subscription loop iteration ${loopIterations}, room connected: ${room.connectionState === "connected"}`
             );
           }
           const allParticipants = [
