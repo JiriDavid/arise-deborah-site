@@ -21,7 +21,7 @@ const uploadBufferToCloudinary = (buffer, filename) =>
         folder: "prayer-room-archive",
         resource_type: "video",
         public_id: filename,
-        format: "webm",
+        // format: "webm", // Let Cloudinary detect format
         overwrite: false,
       },
       (error, result) => {
