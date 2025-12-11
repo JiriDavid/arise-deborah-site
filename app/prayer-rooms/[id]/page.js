@@ -83,10 +83,23 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
   );
 
   useEffect(() => {
-    if (room) {
-      setIsConnected(room.connectionState === "connected");
-    }
-  }, [room?.connectionState]);
+    if (!room) return;
+
+    const handleConnected = () => setIsConnected(true);
+    const handleDisconnected = () => setIsConnected(false);
+
+    // Set initial state
+    setIsConnected(room.connectionState === "connected");
+
+    // Listen for changes
+    room.on(RoomEvent.Connected, handleConnected);
+    room.on(RoomEvent.Disconnected, handleDisconnected);
+
+    return () => {
+      room.off(RoomEvent.Connected, handleConnected);
+      room.off(RoomEvent.Disconnected, handleDisconnected);
+    };
+  }, [room]);
 
   const sendCancellation = useCallback(async () => {
     if (!roomId || !recorderToken) {
@@ -169,6 +182,10 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
       );
       return undefined;
     }
+
+    console.log(
+      "[Recorder] Proceeding with recorder setup - connected and ready"
+    );
 
     if (
       typeof window === "undefined" ||
