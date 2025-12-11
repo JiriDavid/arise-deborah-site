@@ -75,11 +75,18 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
   const startedAtRef = useRef(null);
   const cleanupAudioRef = useRef(null);
   const [status, setStatus] = useState("idle");
+  const [isConnected, setIsConnected] = useState(false);
 
   const recorderToken = recordingConfig?.token;
   const shouldRecord = Boolean(
     recordingConfig?.shouldRecord && recorderToken && roomId && room
   );
+
+  useEffect(() => {
+    if (room) {
+      setIsConnected(room.connectionState === "connected");
+    }
+  }, [room?.connectionState]);
 
   const sendCancellation = useCallback(async () => {
     if (!roomId || !recorderToken) {
@@ -153,17 +160,13 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
   );
 
   useEffect(() => {
-    if (!shouldRecord || !room) {
+    if (!shouldRecord || !room || !isConnected) {
       console.log(
-        "[Recorder] Skipping start (shouldRecord=%s, room=%s)",
+        "[Recorder] Skipping start (shouldRecord=%s, room=%s, connected=%s)",
         shouldRecord,
-        !!room
+        !!room,
+        isConnected
       );
-      return undefined;
-    }
-
-    if (room.connectionState !== "connected") {
-      console.log("[Recorder] Room not fully connected yet, skipping start");
       return undefined;
     }
 
@@ -584,6 +587,7 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
   }, [
     room,
     shouldRecord,
+    isConnected,
     recordingConfig,
     uploadRecording,
     sendCancellation,
