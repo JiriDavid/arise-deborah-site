@@ -464,6 +464,26 @@ function PrayerRoomRecorder({ roomId, recordingConfig, onFinished }) {
               }
             });
           });
+
+          // Also add any existing tracks that are available
+          allParticipants.forEach((participant) => {
+            if (!participant) return;
+            const audioPublications = Array.from(
+              participant.audioTrackPublications.values()
+            );
+            audioPublications.forEach((publication) => {
+              if (
+                publication.track &&
+                isRecordableTrack(publication.track) &&
+                !sources.has(publication.track.sid)
+              ) {
+                console.log(
+                  `[Recorder] Adding existing track: ${publication.track.source} from ${participant.name}`
+                );
+                addTrack(publication.track);
+              }
+            });
+          });
         } catch (err) {
           console.error("[Recorder] Error in subscription loop:", err);
         }
