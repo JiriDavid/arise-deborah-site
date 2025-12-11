@@ -58,13 +58,9 @@ function ParticipantTracker({ onParticipantsChange }) {
 }
 
 function VideoConferenceComponent() {
-  const tracks = useTracks([Track.Source.Camera, Track.Source.Microphone]);
-
   return (
     <div className="h-full w-full">
-      <GridLayout tracks={tracks}>
-        <ParticipantTile />
-      </GridLayout>
+      <VideoConference showScreenShareButton={false} controlBar={false} />
     </div>
   );
 }
