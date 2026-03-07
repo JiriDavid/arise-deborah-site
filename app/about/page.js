@@ -36,9 +36,9 @@ const timeline = [
   },
   {
     year: "2022",
-    title: "Hybrid Prayer Rooms",
+    title: "Hybrid Prayer Meetings",
     detail:
-      "LiveKit-enabled rooms opened, allowing women across nations to enter immersive prayer encounters online.",
+      "Zoom-enabled prayer meetings opened, allowing women across nations to gather for intercession online.",
   },
   {
     year: "2024",
@@ -224,8 +224,8 @@ export default function AboutPage() {
             Walk with us
           </p>
           <h2 className="mt-4 text-3xl font-semibold text-white">
-            Ready to join the prayer rooms, mentorship circles, or upcoming
-            labs?
+            Ready to join our Zoom prayer meetings, mentorship circles, or
+            upcoming labs?
           </h2>
           <p className="mt-4 text-white/70">
             Whether you want to volunteer, serve as a mentor, or bring Arise
@@ -233,10 +233,10 @@ export default function AboutPage() {
           </p>
           <div className="mt-8 flex flex-col gap-4 sm:flex-row sm:justify-center">
             <a
-              href="/prayer-rooms"
+              href="/zoom-meetings"
               className="rounded-2xl bg-[#FFC94A] px-6 py-3 font-semibold text-[#2B1B0F]"
             >
-              Explore Prayer Rooms
+              Explore Zoom Meetings
             </a>
             <a
               href="/contact"

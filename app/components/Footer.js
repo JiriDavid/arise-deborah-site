@@ -59,8 +59,11 @@ export default function Footer() {
     <footer className="text-[#FFC94A] bg border-t border-primary/20">
       <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between lg:px-8">
         <div className="flex justify-center space-x-6 md:order-2">
-          <Link href="/prayer-rooms" className="text-accent hover:text-primary">
-            Prayer Rooms
+          <Link
+            href="/zoom-meetings"
+            className="text-accent hover:text-primary"
+          >
+            Zoom Meetings
           </Link>
           <Link href="/contact" className="text-accent hover:text-primary">
             Contact

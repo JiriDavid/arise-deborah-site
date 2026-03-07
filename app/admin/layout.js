@@ -22,7 +22,6 @@ const NAV_LINKS = [
   { href: "/admin/sermons", label: "Sermons", icon: FiVideo },
   { href: "/admin/events", label: "Events", icon: FiCalendar },
   { href: "/admin/testimonies", label: "Testimonies", icon: FiUsers },
-  { href: "/admin/prayer-rooms", label: "Prayer Rooms", icon: FiVideo },
 ];
 
 export default function AdminLayout({ children }) {
@@ -54,7 +53,7 @@ export default function AdminLayout({ children }) {
     if (!userId) {
       router.push("/admin/login");
     } else if (!isAdmin) {
-      router.push("/prayer-rooms");
+      router.push("/zoom-meetings");
     }
   }, [isLoaded, userId, isAdmin, router]);
 

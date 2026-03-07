@@ -10,7 +10,7 @@ import { motion, AnimatePresence } from "framer-motion"; // ✅ Add animation
 const navigation = [
   { name: "Home", href: "/" },
   { name: "About", href: "/about" },
-  { name: "Prayer Rooms", href: "/prayer-rooms" },
+  { name: "Zoom Meetings", href: "/zoom-meetings" },
   { name: "Sermons", href: "/sermons" },
   { name: "Events", href: "/events" },
   { name: "Testimonies", href: "/testimonies" },

@@ -32,7 +32,7 @@ const featuredItems = [
 ];
 
 const communityStats = [
-  { label: "Daily Prayer", value: "5AM", accent: "Faith Room" },
+  { label: "Daily Prayer", value: "5AM", accent: "Prayer Network" },
   { label: "Nations Reached", value: "18+", accent: "Global" },
   { label: "Sermons Online", value: "120+", accent: "Library" },
 ];
@@ -44,9 +44,9 @@ const ministryHighlights = [
       "Monthly equipping rooms where women receive guidance, covering, and accountability.",
   },
   {
-    title: "Prayer Rooms",
+    title: "Zoom Prayer Meetings",
     description:
-      "Simplified access to immersive LiveKit sessions for intercession, healing, and communion.",
+      "Join scheduled Zoom prayer meetings throughout the day for intercession, healing, and communion.",
   },
   {
     title: "Kingdom Initiatives",
@@ -127,7 +127,7 @@ export default function HomePage() {
               A House of Prayer, Leadership, and Revival
             </h1>
             <p className="text-base sm:text-lg md:text-2xl text-[#FFE9B5] mb-10">
-              Faith-filled gatherings, prophetic prayer rooms, and spirit-led
+              Faith-filled gatherings, prophetic prayer meetings, and spirit-led
               mentorship for women called to influence culture.
             </p>
           </motion.div>
@@ -241,10 +241,10 @@ export default function HomePage() {
               - Apostle Dr Joice Chiyaka, Visionary
             </p>
             <Link
-              href="/prayer-rooms"
+              href="/zoom-meetings"
               className="inline-flex items-center justify-center rounded-2xl bg-[#FFC94A] px-6 py-3 font-semibold text-[#2B1B0F] shadow-lg shadow-[#FFC94A]/30"
             >
-              Explore Prayer Rooms
+              Explore Zoom Meetings
             </Link>
           </div>
         </div>

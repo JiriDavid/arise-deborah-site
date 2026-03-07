@@ -15,8 +15,6 @@ import {
   FiCalendar,
   FiUsers,
   FiPlus,
-  FiEdit3,
-  FiActivity,
   FiMessageCircle,
 } from "react-icons/fi";
 import { motion } from "framer-motion";
@@ -26,28 +24,20 @@ export default function AdminDashboard() {
   const [sermons, setSermons] = useState([]);
   const [events, setEvents] = useState([]);
   const [testimonies, setTestimonies] = useState([]);
-  const [prayerRooms, setPrayerRooms] = useState([]);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
-
-  // Placeholder for prayer requests
-  const [prayerRequests, setPrayerRequests] = useState([]);
 
   useEffect(() => {
     async function fetchData() {
       try {
-        const [sermonRes, eventRes, testimonyRes, prayerRoomRes] =
-          await Promise.all([
-            axios.get("/api/sermons"),
-            axios.get("/api/events"),
-            axios.get("/api/testimonies"),
-            axios.get("/api/prayer-rooms"),
-          ]);
+        const [sermonRes, eventRes, testimonyRes] = await Promise.all([
+          axios.get("/api/sermons"),
+          axios.get("/api/events"),
+          axios.get("/api/testimonies"),
+        ]);
         setSermons(sermonRes.data);
         setEvents(eventRes.data);
         setTestimonies(testimonyRes.data);
-        setPrayerRooms(prayerRoomRes.data);
-        // Placeholder: setPrayerRequests([]) or fetch if available
       } catch (error) {
         console.error("Error fetching data:", error);
       } finally {
@@ -102,13 +92,6 @@ export default function AdminDashboard() {
       icon: <FiUsers size={24} />,
       subtitle: "Stories of faith",
     },
-    {
-      title: "Prayer Rooms",
-      value: prayerRooms.length,
-      accent: "from-[#52E5E7] to-[#130CB7]",
-      icon: <FiActivity size={24} />,
-      subtitle: "Live sessions",
-    },
   ];
 
   return (
@@ -123,17 +106,16 @@ export default function AdminDashboard() {
               Welcome back, {user?.firstName || "Leader"}
             </h1>
             <p className="text-white/80 max-w-2xl">
-              Use this space to shepherd sermons, events, testimonies, and
-              prayer rooms with precision while staying rooted in the Arise
-              Deborah palette.
+              Use this space to shepherd sermons, events, and testimonies with
+              precision while staying rooted in the Arise Deborah palette.
             </p>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row">
             <button
-              onClick={() => router.push("/admin/prayer-rooms")}
+              onClick={() => router.push("/admin/events")}
               className="inline-flex items-center gap-2 rounded-2xl bg-[#FFC94A] px-6 py-3 font-semibold text-[#2B1B0F] shadow-lg shadow-[#FFC94A]/40"
             >
-              <FiEdit3 /> Quick Draft
+              <FiCalendar /> Quick Schedule
             </button>
             <button
               onClick={() => router.push("/admin/events")}
@@ -166,7 +148,7 @@ export default function AdminDashboard() {
         </div>
       </section>
 
-      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         {[
           {
             label: "Publish Sermon",
@@ -182,11 +164,6 @@ export default function AdminDashboard() {
             label: "Collect Testimony",
             href: "/admin/testimonies",
             color: "bg-[#6b4425]",
-          },
-          {
-            label: "Launch Prayer Room",
-            href: "/admin/prayer-rooms",
-            color: "bg-[#8a5a2e]",
           },
         ].map((action) => (
           <motion.button
